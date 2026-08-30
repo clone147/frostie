@@ -18,6 +18,10 @@ Google Play layer goldie lacks:
 - **A Play-rules checklist** — screenshot counts and promotion eligibility (≥4 shots
   at ≥1080 px), reminders about the 512×512 icon and the YouTube-only preview video.
 
+- **Its own studio** (`scripts/studio.mjs`, port 4322) — the App Store page and the
+  Play listing in one UI, edited together: one Design panel writes the shared
+  `goldie.design.json` and re-renders **both** stores server-side in seconds.
+
 ## Install
 
 Copy this directory to `~/.claude/skills/frostie/` (or add it as a plugin skill).
@@ -25,7 +29,14 @@ Claude Code picks it up automatically; say "make store screenshots" or "/frostie
 
 ## Usage
 
-Stage 1 (iOS) is the goldie skill, unchanged. Stage 2:
+Stage 1 (iOS) is the goldie skill, unchanged. Then either open the dual-store studio:
+
+```bash
+GOLDIE_CONFIG=<app-repo>/goldie/goldie.config.ts node scripts/studio.mjs
+# → http://localhost:4322 — App Store + Google Play tabs, shared design panel
+```
+
+or run the headless Play export:
 
 ```bash
 GOLDIE_CONFIG=<app-repo>/goldie/goldie.config.ts \

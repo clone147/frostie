@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>frostie studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Albert+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Tokeny SZRON DS (colors/typography/spacing) */
+  :root{
+    --ink:#0C1013; --ink2:#171D21; --ink3:#21272C;
+    --line:rgba(255,255,255,.16);
+    --tx:#FFF; --tx2:rgba(255,255,255,.66); --tx3:rgba(255,255,255,.44);
+    --accent:#FA7124; --accent-soft:rgba(250,113,36,.12); --brand:#3C56F4;
+    --success:#4CB86A;
+    --disp:"Space Grotesk","Albert Sans",system-ui,sans-serif;
+    --body:"Albert Sans",system-ui,sans-serif;
+    --r-card:16px; --r-btn:8px; --r-sm:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--tx);font-family:var(--body);font-size:15px;line-height:1.55}
+  .wrap{max-width:1400px;margin:0 auto;padding:28px 24px 64px}
+  .logo{font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:.02em}
+  .logo b{color:var(--brand);font-weight:600}
+  .eyebrow{font-family:var(--body);font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
+  h1{font-family:var(--disp);font-weight:500;font-size:30px;letter-spacing:-.015em;line-height:1.12;margin:6px 0 0}
+  .grid{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-top:24px;align-items:start}
+  .card{background:var(--ink2);border-radius:var(--r-card);padding:20px}
+  .tabs{display:flex;gap:8px;margin-bottom:16px}
+  .tab{font-family:var(--body);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+       color:var(--tx2);background:transparent;border:1px solid var(--line);border-radius:100px;
+       padding:8px 18px;cursor:pointer}
+  .tab.on{color:var(--ink);background:var(--accent);border-color:var(--accent)}
+  /* ── mockup App Store ── */
+  .as-head{display:flex;gap:16px;align-items:center}
+  .as-icon{width:76px;height:76px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+           font-family:var(--disp);font-weight:600;font-size:34px;color:#fff}
+  .as-name{font-family:var(--disp);font-weight:600;font-size:20px}
+  .as-sub{color:var(--tx2);font-size:13px}
+  .as-get{margin-left:auto;background:#0A84FF;color:#fff;border:none;border-radius:100px;
+          padding:7px 22px;font-weight:600;font-size:14px}
+  .as-meta{display:flex;gap:28px;margin:14px 0 6px;color:var(--tx3);font-size:12px}
+  .as-meta b{display:block;color:var(--tx2);font-size:15px;font-family:var(--disp)}
+  /* ── mockup Play ── */
+  .fg{width:100%;border-radius:var(--r-sm);display:block}
+  .pl-head{display:flex;gap:14px;align-items:center;margin-top:16px}
+  .pl-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+           font-family:var(--disp);font-weight:600;font-size:26px;color:#fff}
+  .pl-name{font-family:var(--disp);font-weight:600;font-size:19px}
+  .pl-dev{color:#7fcf8f;font-size:13px;font-weight:600}
+  .pl-install{width:100%;margin-top:14px;background:var(--success);color:#0A1F10;border:none;
+              border-radius:var(--r-btn);padding:11px;font-weight:600;font-size:14px}
+  /* ── strip ── */
+  .strip{display:flex;gap:12px;overflow-x:auto;padding:16px 2px 6px}
+  .strip img{height:380px;border-radius:14px;flex:none;background:var(--ink3)}
+  .desc{color:var(--tx2);font-size:13px;white-space:pre-wrap;margin-top:12px}
+  /* ── sidebar ── */
+  .side{position:sticky;top:24px;display:flex;flex-direction:column;gap:16px}
+  .fld{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+  .fld label{composes:eyebrow}
+  .lab{font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
+  input[type=text],select,textarea{background:var(--ink);border:1px solid var(--line);border-radius:var(--r-sm);
+    color:var(--tx);font-family:var(--body);font-size:13px;padding:9px 12px;width:100%}
+  textarea{resize:vertical;min-height:34px}
+  .presets{display:flex;gap:8px;margin-top:8px}
+  .preset{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);cursor:pointer}
+  .row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:14px}
+  .switch{appearance:none;width:40px;height:22px;border-radius:100px;background:var(--ink3);position:relative;cursor:pointer;flex:none}
+  .switch:checked{background:var(--accent)}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+  .switch:checked::after{left:21px}
+  .btn{background:var(--accent);color:var(--ink);border:none;border-radius:var(--r-btn);
+       padding:13px;font-family:var(--body);font-weight:600;font-size:13px;letter-spacing:.1em;
+       text-transform:uppercase;cursor:pointer;width:100%}
+  .btn[disabled]{opacity:.5}
+  .status{font-size:12px;color:var(--tx3);min-height:18px}
+  .status.err{color:var(--accent)}
+  .check{font-size:12px;color:var(--tx2);margin-top:6px}
+  .check .ok{color:var(--success)} .check .warn{color:var(--accent)}
+  .scene{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+  .scene .id{font-family:var(--disp);font-size:12px;color:var(--tx3)}
+  hr{border:none;border-top:1px solid var(--line);margin:16px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo"><b>[</b>FROSTIE<b>]</b></div>
+  <div class="eyebrow" style="margin-top:22px">Studio · App Store + Google Play</div>
+  <h1 id="title">…</h1>
+
+  <div class="grid">
+    <div>
+      <div class="tabs">
+        <button class="tab on" data-tab="as">App Store</button>
+        <button class="tab" data-tab="pl">Google Play</button>
+      </div>
+
+      <div class="card" id="tab-as">
+        <div class="as-head">
+          <div class="as-icon" id="asIcon"></div>
+          <div>
+            <div class="as-name" id="asName"></div>
+            <div class="as-sub" id="asSub"></div>
+          </div>
+          <button class="as-get" id="asPrice">Gratis</button>
+        </div>
+        <div class="as-meta">
+          <span><b id="asRating"></b>ocena</span>
+          <span><b id="asAge">4+</b>wiek</span>
+          <span><b id="asCat"></b>kategoria</span>
+        </div>
+        <div class="strip" id="asStrip"></div>
+        <div class="desc" id="asDesc"></div>
+      </div>
+
+      <div class="card" id="tab-pl" style="display:none">
+        <img class="fg" id="plFg" alt="feature graphic">
+        <div class="pl-head">
+          <div class="pl-icon" id="plIcon"></div>
+          <div>
+            <div class="pl-name" id="plName"></div>
+            <div class="pl-dev" id="plDev"></div>
+          </div>
+        </div>
+        <button class="pl-install">Zainstaluj</button>
+        <div class="strip" id="plStrip"></div>
+        <div class="desc" id="plDesc"></div>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <div class="eyebrow">Design — wspólny dla obu sklepów</div>
+
+        <div class="fld"><span class="lab">Tło (CSS)</span>
+          <input type="text" id="bg">
+          <div class="presets" id="presets"></div>
+        </div>
+        <div class="fld"><span class="lab">Font</span><select id="font"></select></div>
+        <div class="fld"><span class="lab">Template</span><select id="template"></select></div>
+        <div class="fld"><span class="lab">Layout (wszystkie kafle)</span><select id="layout"></select></div>
+        <div class="row"><span class="lab">App Store bez ramki (screen-only)</span>
+          <input type="checkbox" class="switch" id="screenOnly"></div>
+        <div class="row"><span class="lab">Google Play z ramką iPhone'a</span>
+          <input type="checkbox" class="switch" id="playBezel"></div>
+
+        <hr>
+        <div class="eyebrow">Nagłówki kafli</div>
+        <div id="scenes"></div>
+
+        <hr>
+        <button class="btn" id="apply">Zastosuj i wyrenderuj</button>
+        <div class="status" id="status" style="margin-top:10px"></div>
+        <div class="check" id="check"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const PRESETS = [
+  "linear-gradient(160deg,#3F3F46 0%,#18181B 100%)",
+  "linear-gradient(165deg,#1C1917 0%,#292524 55%,#3B302A 100%)",
+  "linear-gradient(150deg,#0F172A 0%,#1E3A5F 100%)",
+  "linear-gradient(155deg,#101014 0%,#2A1030 100%)",
+  "#F4F4F5",
+];
+let S = null;
+
+function iconBg(bg){ return /gradient/.test(bg) ? bg : "linear-gradient(150deg,#FA7124,#3C56F4)"; }
+
+function render() {
+  const s = S;
+  $("title").textContent = s.store.name + " — podgląd obu sklepów";
+  // App Store
+  $("asIcon").style.background = iconBg(s.design.background);
+  $("asIcon").textContent = (s.store.name||"A")[0];
+  $("asName").textContent = s.store.name;
+  $("asSub").textContent = s.store.subtitle;
+  $("asPrice").textContent = s.store.price || "Gratis";
+  $("asRating").textContent = s.store.rating || "–";
+  $("asCat").textContent = s.store.category || "–";
+  $("asDesc").textContent = s.store.description || "";
+  $("asStrip").innerHTML = s.ios.map(u=>`<img src="${u}?t=${Date.now()}">`).join("");
+  // Play
+  $("plFg").src = s.fg ? `/fg?t=${Date.now()}` : "";
+  $("plIcon").style.background = iconBg(s.design.background);
+  $("plIcon").textContent = (s.store.name||"A")[0];
+  $("plName").textContent = s.store.name;
+  $("plDev").textContent = s.store.developer || s.store.category || "";
+  $("plDesc").textContent = s.store.description || "";
+  $("plStrip").innerHTML = s.play.map(u=>`<img src="${u}?t=${Date.now()}">`).join("");
+  // panel
+  $("bg").value = s.design.background || "";
+  $("font").innerHTML = s.fonts.map(f=>`<option value="${f}" ${f===s.design.fontFamily?"selected":""}>${f||"(z configu)"}</option>`).join("");
+  $("template").innerHTML = ['<option value="">(z configu)</option>']
+    .concat(s.templates.map(t=>`<option ${t===s.design.template?"selected":""}>${t}</option>`)).join("");
+  $("layout").innerHTML = ['<option value="">(wg template)</option>']
+    .concat(s.layouts.map(l=>`<option ${l===s.design.layout?"selected":""}>${l}</option>`)).join("");
+  $("screenOnly").checked = s.design.screenOnly;
+  $("playBezel").checked = s.design.playBezel;
+  $("presets").innerHTML = PRESETS.map(p=>`<div class="preset" style="background:${p}" data-bg="${p}"></div>`).join("");
+  document.querySelectorAll(".preset").forEach(el=>el.onclick=()=>{$("bg").value=el.dataset.bg;});
+  $("scenes").innerHTML = s.scenes.map(sc=>`
+    <div class="scene" data-id="${sc.id}">
+      <div class="id">${sc.id}</div>
+      <div class="fld"><textarea class="hl" rows="1">${sc.headline}</textarea></div>
+      <div class="fld"><textarea class="sh" rows="1" placeholder="subhead">${sc.subhead}</textarea></div>
+    </div>`).join("");
+  $("check").innerHTML = s.checklist.map(r=>
+    `Play ${r.locale}: ${r.count} szt. — <span class="${r.promoEligible?"ok":"warn"}">${r.promoEligible?"kwalifikuje się do polecania":"potrzeba ≥4 do polecania"}</span>`
+  ).join("<br>");
+}
+
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));
+  $("tab-as").style.display = t.dataset.tab==="as"?"":"none";
+  $("tab-pl").style.display = t.dataset.tab==="pl"?"":"none";
+});
+
+$("apply").onclick = async () => {
+  const copy = {};
+  document.querySelectorAll(".scene").forEach(el=>{
+    copy[el.dataset.id] = {
+      headline: el.querySelector(".hl").value,
+      subhead: el.querySelector(".sh").value,
+    };
+  });
+  const body = {
+    background: $("bg").value.trim(),
+    fontFamily: $("font").value,
+    template: $("template").value,
+    layout: $("layout").value,
+    screenOnly: $("screenOnly").checked,
+    playBezel: $("playBezel").checked,
+    copy,
+  };
+  $("apply").disabled = true;
+  $("status").textContent = "Renderuję oba sklepy…";
+  $("status").classList.remove("err");
+  try {
+    const r = await fetch("/api/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const j = await r.json();
+    if (j.error) throw new Error(j.error);
+    S = j.state; render();
+    $("status").textContent = "Gotowe — goldie.design.json zapisany, oba zestawy przerenderowane.";
+  } catch(e) {
+    $("status").textContent = "Błąd: " + e.message;
+    $("status").classList.add("err");
+  } finally {
+    $("apply").disabled = false;
+  }
+};
+
+fetch("/api/state").then(r=>r.json()).then(s=>{S=s;render();});
+</script>
+</body>
+</html>

@@ -38,7 +38,24 @@ render, `verify`, and the whole iteration table. Every command is
 Nothing in frostie changes that stage. Do it first; the Play stage feeds on
 its outputs (`out/raw/`, `goldie.design.json`, the config's `store` block).
 
-## Stage 2 — Google Play (frostie's own layer)
+## frostie studio — one studio for BOTH stores
+
+frostie ships its own studio (instead of goldie's iOS-only one). It shows the
+App Store product page and the Google Play listing side by side (tabs), with a
+single Design panel — background, font, template, layout, per-tile headlines,
+App Store screen-only toggle, Play bezel toggle. "Zastosuj i wyrenderuj"
+writes `goldie.design.json` (the same sidecar goldie reads) and re-renders
+BOTH stores server-side in a few seconds — WYSIWYG without a build step.
+
+```bash
+GOLDIE_CONFIG=<app-repo>/goldie/goldie.config.ts   node <this-skill-dir>/scripts/studio.mjs      # background task; http://localhost:4322
+```
+
+Start it in the background and tell the user the URL. It needs `out/raw/`
+from a prior `goldie capture`. Prefer it over goldie's studio; fall back to
+goldie's studio only for features frostie's lacks (drag-reorder, export zip).
+
+## Stage 2 — Google Play (frostie's own layer, CLI path)
 
 Run after capture (and ideally after the user is happy with the studio look,
 since the Play render reuses `goldie.design.json`):
