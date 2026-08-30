@@ -189,6 +189,16 @@ export async function renderFeatureGraphic(env, proj) {
     const img = await loadImage(shotFile);
     const shotH = 620;
     const shotW = (img.width / img.height) * shotH;
+    // duży downscale (2868→620) w jednym kroku mydli tekst — schodzimy połówkami
+    let srcC = img, sw = img.width, sh = img.height;
+    while (sh / 2 > shotH) {
+      const half = createCanvas(Math.round(sw / 2), Math.round(sh / 2));
+      const hc = half.getContext("2d");
+      hc.imageSmoothingEnabled = true;
+      hc.imageSmoothingQuality = "high";
+      hc.drawImage(srcC, 0, 0, half.width, half.height);
+      srcC = half; sw = half.width; sh = half.height;
+    }
     const x = FG.width - shotW - 64, y = 56, r = 34;
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,0.35)";
@@ -196,7 +206,9 @@ export async function renderFeatureGraphic(env, proj) {
     ctx.beginPath();
     ctx.roundRect(x, y, shotW, shotH, r);
     ctx.clip();
-    ctx.drawImage(img, x, y, shotW, shotH);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(srcC, x, y, shotW, shotH);
     ctx.restore();
   }
 
@@ -225,7 +237,7 @@ export async function renderFeatureGraphic(env, proj) {
   const playDir = join(cfg.outDir, "play");
   mkdirSync(playDir, { recursive: true });
   const fgPath = join(playDir, "feature-graphic.jpg");
-  writeFileSync(fgPath, await canvas.encode("jpeg", 92));
+  writeFileSync(fgPath, await canvas.encode("jpeg", 95));
   return fgPath;
 }
 
