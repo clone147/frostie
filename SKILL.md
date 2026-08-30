@@ -48,7 +48,8 @@ writes `goldie.design.json` (the same sidecar goldie reads) and re-renders
 BOTH stores server-side in a few seconds — WYSIWYG without a build step.
 
 ```bash
-GOLDIE_CONFIG=<app-repo>/goldie/goldie.config.ts   node <this-skill-dir>/scripts/studio.mjs      # background task; http://localhost:4322
+GOLDIE_CONFIG=<app-repo>/goldie/goldie.config.ts \
+  node <this-skill-dir>/scripts/studio.mjs   # background task; http://localhost:4322
 ```
 
 Start it in the background and tell the user the URL. It needs `out/raw/`
