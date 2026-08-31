@@ -63,7 +63,10 @@ export function applyDesign(cfg, d) {
     cfg.theme.subheadColor = "#D9E1EA";
   }
   if (d.frame) cfg.frame = { variant: d.frame };
-  if (d.fontFamily) cfg.theme.fontFamily = d.fontFamily;
+  // klucz bundlowanego fontu ("lato") → pełny stack CSS; goldie wstawia
+  // theme.fontFamily wprost do ctx.font, więc goła nazwa klucza = fallback
+  // systemowy bez części polskich glyfów (tofu na ą/ń/ś/ę)
+  if (d.fontFamily) cfg.theme.fontFamily = FONT_FAMILIES[d.fontFamily] ?? d.fontFamily;
   if (d.template !== undefined) cfg.theme.template = d.template || undefined;
   if (d.layout) cfg.theme.layout = d.layout;
   if (d.screenOnly !== undefined) cfg.theme.screenOnly = d.screenOnly;

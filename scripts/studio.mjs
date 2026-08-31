@@ -11,7 +11,7 @@ import { createServer } from "node:http";
 import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  designFile, loadEngine, loadProject, pickText, playChecklist,
+  designFile, FONT_FAMILIES, loadEngine, loadProject, pickText, playChecklist,
   renderFeatureGraphic, renderIOS, renderPlay,
 } from "./lib/engine.mjs";
 
@@ -59,7 +59,12 @@ function state() {
     },
     design: {
       background: proj.cfg.theme.background,
-      fontFamily: proj.design.fontFamily ?? "",
+      fontFamily: (() => {
+        const f = proj.design.fontFamily ?? "";
+        if (FONT_FAMILIES[f]) return f;
+        const key = Object.entries(FONT_FAMILIES).find(([, v]) => v === f)?.[0];
+        return key ?? f;
+      })(),
       template: proj.design.template ?? proj.cfg.theme.template ?? "",
       layout: proj.design.layout ?? "",
       screenOnly: proj.cfg.theme.screenOnly === true,
