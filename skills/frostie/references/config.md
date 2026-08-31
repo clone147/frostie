@@ -83,7 +83,9 @@ const config: GoldieConfig = {
       kind: "preview",
       id: "preview",
       segments: [
-        { id: "open",    flow: "store-preview-01-open" },
+        // trimStartSeconds ucina początek nagrania segmentu przed sklejeniem
+        // (np. odpalanie web clipa przez Spotlight nie może trafić do wideo).
+        { id: "open",    flow: "store-preview-01-open", trimStartSeconds: 5.6 },
         { id: "compose", flow: "store-preview-02-compose" },
         { id: "create",  flow: "store-preview-03-create", holdSeconds: 2 },
       ],

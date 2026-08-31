@@ -187,11 +187,29 @@ const server = createServer(async (req, res) => {
       return;
     }
     if (file && !file.includes("..") && existsSync(file)) {
+      const buf = readFileSync(file);
+      const type = MIME[extname(file)] ?? "application/octet-stream";
+      const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? "");
+      if (range && (range[1] || range[2])) {
+        const start = range[1] ? Number(range[1]) : Math.max(0, buf.length - Number(range[2]));
+        const end = range[1] && range[2] ? Math.min(Number(range[2]), buf.length - 1) : buf.length - 1;
+        res.writeHead(206, {
+          "Content-Type": type,
+          "Content-Range": `bytes ${start}-${end}/${buf.length}`,
+          "Content-Length": end - start + 1,
+          "Accept-Ranges": "bytes",
+          "Cache-Control": "no-store",
+        });
+        res.end(buf.subarray(start, end + 1));
+        return;
+      }
       res.writeHead(200, {
-        "Content-Type": MIME[extname(file)] ?? "application/octet-stream",
+        "Content-Type": type,
+        "Content-Length": buf.length,
+        "Accept-Ranges": "bytes",
         "Cache-Control": "no-store",
       });
-      res.end(readFileSync(file));
+      res.end(buf);
       return;
     }
     res.writeHead(404); res.end("not found");
