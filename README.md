@@ -33,8 +33,7 @@ As a Claude Code plugin (bundles the argent MCP server):
 /plugin install frostie@frostie
 ```
 
-Or as a plain user skill: clone into `~/.claude/skills/frostie/` (argent must then be
-available separately). Requirements: macOS with Xcode simulators, Node 20+, `ffmpeg`.
+Requirements: macOS with Xcode simulators, Node 20+, `ffmpeg`.
 
 ## Usage
 
