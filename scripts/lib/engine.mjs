@@ -1,6 +1,6 @@
-// frostie engine — wspólny rdzeń dla play-export i studia.
-// Importuje zbundlowany silnik goldie (self-install do ~/.cache/frostie) i dokłada
-// warstwę frostie: merge goldie.design.json, urządzenie Play 1080×1920, feature graphic.
+// frostie engine — shared core for play-export and the studio.
+// Imports the bundled goldie engine (self-installs into ~/.cache/frostie) and adds
+// the frostie layer: goldie.design.json merge, the 1080×1920 Play device, feature graphic.
 
 import { execFileSync, execSync } from "node:child_process";
 import {
@@ -20,7 +20,7 @@ export const FONT_FAMILIES = {
 };
 
 /** Katalog silnika: vendorowany engine/ z repo frostie, zsynchronizowany do cache
- *  (npm install zależności robimy w cache, nie w katalogu pluginu). */
+ *  (npm-installing deps happens in the cache, not in the plugin dir). */
 export function engineRoot() {
   return join(homedir(), ".cache", "frostie", "engine");
 }
@@ -33,7 +33,7 @@ export async function loadEngine() {
   const have = existsSync(verFile) ? readFileSync(verFile, "utf8").trim() : "";
   if (have !== wanted || !existsSync(join(pkgRoot, "node_modules"))) {
     mkdirSync(pkgRoot, { recursive: true });
-    console.log("[frostie] synchronizuję silnik do cache…");
+    console.log("[frostie] syncing engine to cache…");
     execSync(`rsync -a --delete --exclude node_modules "${vendored}/" "${pkgRoot}/"`);
     execSync(`npm install --omit=dev --no-audit --no-fund --loglevel=error`, { cwd: pkgRoot, stdio: "inherit" });
     writeFileSync(verFile, wanted);
@@ -41,7 +41,7 @@ export async function loadEngine() {
   const goldie = await import(pathToFileURL(join(pkgRoot, "dist", "index.js")).href);
   const req = createRequire(join(pkgRoot, "package.json"));
   const canvas = req("@napi-rs/canvas");
-  // rejestracja bundlowanych fontów (dist nie eksportuje registerFonts)
+  // register bundled fonts (dist does not export registerFonts)
   const fontsDir = join(pkgRoot, "assets", "fonts");
   if (existsSync(fontsDir)) {
     for (const f of readdirSync(fontsDir)) {
@@ -62,7 +62,7 @@ export function readDesign(cfgPath) {
 }
 
 // Odtworzone applyDesign goldie (dist go nie eksportuje) + rozszerzenia frostie
-// (klucz "play" goldie ignoruje, więc jeden sidecar obsługuje oba sklepy).
+// (goldie ignores the "play" key, so one sidecar serves both stores).
 export function applyDesign(cfg, d) {
   if (!d) return;
   if (d.background) {
@@ -72,9 +72,9 @@ export function applyDesign(cfg, d) {
     cfg.theme.subheadColor = "#D9E1EA";
   }
   if (d.frame) cfg.frame = { variant: d.frame };
-  // klucz bundlowanego fontu ("lato") → pełny stack CSS; goldie wstawia
-  // theme.fontFamily wprost do ctx.font, więc goła nazwa klucza = fallback
-  // systemowy bez części polskich glyfów (tofu na ą/ń/ś/ę)
+  // bundled font key ("lato") → full CSS stack; goldie puts theme.fontFamily
+  // straight into ctx.font, so a bare key name = system fallback missing some
+  // Polish glyphs (tofu on ą/ń/ś/ę)
   if (d.fontFamily) cfg.theme.fontFamily = FONT_FAMILIES[d.fontFamily] ?? d.fontFamily;
   if (d.template !== undefined) cfg.theme.template = d.template || undefined;
   if (d.layout) cfg.theme.layout = d.layout;
@@ -116,7 +116,7 @@ function ensurePlayDevice(env, cfg) {
   };
   const rawSrc = join(cfg.outDir, "raw", srcKey);
   const rawPlay = join(cfg.outDir, "raw", PLAY_KEY);
-  if (!existsSync(rawSrc)) throw new Error(`brak surowych zrzutów w ${rawSrc} — najpierw: goldie capture`);
+  if (!existsSync(rawSrc)) throw new Error(`no raw captures in ${rawSrc} — run goldie capture first`);
   rmSync(rawPlay, { force: true });
   try { symlinkSync(rawSrc, rawPlay); } catch { /* istnieje */ }
   return { srcKey, rawSrc };
@@ -130,7 +130,7 @@ export async function renderIOS(env, proj) {
   }
 }
 
-/** Google Play: 1080×1920, domyślnie screen-only (bez sprzętu Apple). */
+/** Google Play: 1080×1920, screen-only by default (no Apple hardware). */
 export async function renderPlay(env, proj, { bezel = false } = {}) {
   const { rawSrc } = ensurePlayDevice(env, proj.cfg);
   const prevScreenOnly = proj.cfg.theme.screenOnly;
@@ -160,7 +160,7 @@ function parseGradient(ctx, css, w, h) {
     const sm = /^(#[0-9a-fA-F]{3,8}|rgba?\([^)]*\))\s*([\d.]+)?%?$/.exec(s);
     if (!sm) return;
     const off = sm[2] !== undefined ? parseFloat(sm[2]) / 100 : i / Math.max(1, stops.length - 1);
-    try { g.addColorStop(Math.min(1, Math.max(0, off)), sm[1]); } catch { /* zły kolor */ }
+    try { g.addColorStop(Math.min(1, Math.max(0, off)), sm[1]); } catch { /* bad color */ }
   });
   return g;
 }
@@ -182,7 +182,7 @@ export function pickText(v, locale) {
   return typeof v === "string" ? v : v?.[locale] ?? Object.values(v ?? {})[0] ?? "";
 }
 
-/** Feature graphic 1024×500 JPEG (obowiązkowy na Play). */
+/** Feature graphic 1024×500 JPEG (mandatory on Play). */
 export async function renderFeatureGraphic(env, proj) {
   const { createCanvas, loadImage } = env.canvas;
   const cfg = proj.cfg;
@@ -208,7 +208,7 @@ export async function renderFeatureGraphic(env, proj) {
     const img = await loadImage(shotFile);
     const shotH = 620;
     const shotW = (img.width / img.height) * shotH;
-    // duży downscale (2868→620) w jednym kroku mydli tekst — schodzimy połówkami
+    // a big one-step downscale (2868→620) blurs text — step down by halves
     let srcC = img, sw = img.width, sh = img.height;
     while (sh / 2 > shotH) {
       const half = createCanvas(Math.round(sw / 2), Math.round(sh / 2));
@@ -271,7 +271,7 @@ export function playChecklist(cfg) {
   return rows;
 }
 
-/** Warianty ramki dostępne w silniku (assets goldie). */
+/** Frame variants available in the engine (goldie assets). */
 export const FRAME_VARIANTS = ["17-pro-silver", "17-pro-blue", "17-pro-orange"];
 
 function probeImage(file) {
@@ -283,7 +283,7 @@ function probeImage(file) {
   };
 }
 
-/** Strukturalna weryfikacja reguł Apple + Google Play (dla panelu w studiu). */
+/** Structural verification of Apple + Google Play rules (for the studio panel). */
 export function verifyAll(env, proj) {
   const cfg = proj.cfg;
   const rows = [];
@@ -292,7 +292,7 @@ export function verifyAll(env, proj) {
   for (const locale of cfg.locales ?? ["en-US"]) {
     const iosDir = join(cfg.outDir, "screenshots", spec.label, locale);
     const iosFiles = existsSync(iosDir) ? readdirSync(iosDir).filter((f) => f.endsWith(".png")) : [];
-    rows.push({ store: "App Store", item: `screenshoty ${locale}: ${iosFiles.length} szt.`, ok: iosFiles.length >= 1 && iosFiles.length <= 10, detail: "1–10 na rodzinę urządzeń" });
+    rows.push({ store: "App Store", item: `screenshots ${locale}: ${iosFiles.length}`, ok: iosFiles.length >= 1 && iosFiles.length <= 10, detail: "1–10 per device family" });
     for (const f of iosFiles) {
       const m = probeImage(join(iosDir, f));
       const ok = m.width === spec.screenshot.width && m.height === spec.screenshot.height && !m.alpha;
@@ -300,8 +300,8 @@ export function verifyAll(env, proj) {
     }
     const playDir = join(cfg.outDir, "screenshots", "play", locale);
     const playFiles = existsSync(playDir) ? readdirSync(playDir).filter((f) => f.endsWith(".png")) : [];
-    rows.push({ store: "Google Play", item: `screenshoty ${locale}: ${playFiles.length} szt.`, ok: playFiles.length >= 2 && playFiles.length <= 8, detail: "2–8 szt." });
-    rows.push({ store: "Google Play", item: `promowanie ${locale}`, ok: playFiles.length >= 4, detail: "≥4 szt. przy ≥1080 px dla dużych formatów polecania" });
+    rows.push({ store: "Google Play", item: `screenshots ${locale}: ${playFiles.length}`, ok: playFiles.length >= 2 && playFiles.length <= 8, detail: "2–8 shots" });
+    rows.push({ store: "Google Play", item: `promotion ${locale}`, ok: playFiles.length >= 4, detail: "≥4 shots at ≥1080 px for large promo formats" });
     for (const f of playFiles) {
       const m = probeImage(join(playDir, f));
       const ok = m.width === 1080 && m.height === 1920 && !m.alpha;
@@ -315,9 +315,9 @@ export function verifyAll(env, proj) {
         const dur = Number(fmt.duration);
         const okDur = dur >= 15 && dur <= 30;
         rows.push({ store: "App Store", item: `preview.mp4 ${locale}`, ok: okDur, detail: `${dur.toFixed(1)} s (wymagane 15–30 s), ${(Number(fmt.size) / 1e6).toFixed(1)} MB` });
-      } catch { rows.push({ store: "App Store", item: `preview.mp4 ${locale}`, ok: false, detail: "ffprobe nie odczytał pliku" }); }
+      } catch { rows.push({ store: "App Store", item: `preview.mp4 ${locale}`, ok: false, detail: "ffprobe could not read the file" }); }
     } else {
-      rows.push({ store: "App Store", item: `preview.mp4 ${locale}`, ok: false, detail: "brak — uruchom: goldie preview" });
+      rows.push({ store: "App Store", item: `preview.mp4 ${locale}`, ok: false, detail: "missing — run: goldie preview" });
     }
   }
   const fg = join(cfg.outDir, "play", "feature-graphic.jpg");
@@ -326,9 +326,9 @@ export function verifyAll(env, proj) {
     const ok = m.width === 1024 && m.height === 500;
     rows.push({ store: "Google Play", item: "feature-graphic.jpg", ok, detail: ok ? "1024×500" : `${m.width}×${m.height}, wymagane 1024×500` });
   } else {
-    rows.push({ store: "Google Play", item: "feature-graphic.jpg", ok: false, detail: "brak — wymagany na Play" });
+    rows.push({ store: "Google Play", item: "feature-graphic.jpg", ok: false, detail: "missing — mandatory on Play" });
   }
-  rows.push({ store: "Google Play", item: "ikona 512×512 32-bit PNG", ok: false, detail: "poza zakresem frostie — przygotuj osobno" });
-  rows.push({ store: "Google Play", item: "wideo", ok: true, detail: "tylko link YouTube (public/unlisted, bez reklam) — użyj preview.mp4" });
+  rows.push({ store: "Google Play", item: "icon 512×512 32-bit PNG", ok: false, detail: "out of frostie scope — prepare separately" });
+  rows.push({ store: "Google Play", item: "video", ok: true, detail: "YouTube link only (public/unlisted, ads off) — use preview.mp4" });
   return rows;
 }

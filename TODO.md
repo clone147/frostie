@@ -1,33 +1,37 @@
-# frostie — pełne wchłonięcie goldie (checklista celu)
+# frostie — full absorption of goldie (goal checklist)
 
-Zasada: odhaczam dopiero po PRZETESTOWANIU danego punktu.
+Rule: a box gets checked only after the item has been TESTED.
 
-## Samodzielność (bez pluginu goldie w systemie)
-- [x] 1. Frostie jako plugin: `.claude-plugin/plugin.json` + `marketplace.json`
-- [x] 2. Własny `.mcp.json` bundlujący serwer argent (jak w goldie)
-- [x] 3. SKILL.md: wchłonięty CAŁY workflow iOS (Etap 1 bez delegacji do skilla goldie)
-- [x] 4. `references/config.md` (schemat configu + copywriting) w repo frostie
-- [x] 5. `references/flows.md` (słownik flow YAML) w repo frostie
-- [x] 6. Usunięte odwołania „fall back to goldie's studio" itp. ze SKILL.md
-- [x] 7. doctor/capture/frame/preview/manifest/verify udokumentowane jako komendy frostie
-       (silnik: pinowany pakiet npm goldie@0 — zostaje jako biblioteka)
+## Self-containment (no goldie plugin on the system)
+- [x] 1. frostie as a plugin: `.claude-plugin/plugin.json` + `marketplace.json`
+- [x] 2. Own `.mcp.json` bundling the argent server (as in goldie)
+- [x] 3. SKILL.md: the WHOLE iOS workflow absorbed (Stage 1 without delegating to the goldie skill)
+- [x] 4. `references/config.md` (config schema + copywriting) in the frostie repo
+- [x] 5. `references/flows.md` (flow YAML vocabulary) in the frostie repo
+- [x] 6. References like "fall back to goldie's studio" removed from SKILL.md
+- [x] 7. doctor/capture/frame/preview/manifest/verify documented as frostie commands
+       (engine: pinned npm package goldie@0 — kept as a library)
 
-## Parytet studia (funkcje studia goldie w studiu frostie)
-- [x] 8. Zmiana kolejności kafli (reorder) zapisywana do design.order
-- [x] 9. Per-scene layout override (design.sceneLayouts) w UI
-- [x] 10. Wybór wariantu ramki (17-pro-silver/blue/orange) w UI
-- [x] 11. Podgląd wideo preview w studiu (gdy out/previews/** istnieje)
-- [x] 12. Panel weryfikacji reguł Apple + Play (verify) w studiu
-- [x] 13. Eksport ZIP gotowy do uploadu (App Store + Play w jednym archiwum)
+## Studio parity (goldie studio features in the frostie studio)
+- [x] 8. Tile reorder saved to design.order
+- [x] 9. Per-scene layout override (design.sceneLayouts) in the UI
+- [x] 10. Frame variant picker (17-pro-silver/blue/orange) in the UI
+- [x] 11. Preview video playback in the studio (when out/previews/** exists)
+- [x] 12. Apple + Play rules verification panel (verify) in the studio
+- [x] 13. Upload-ready ZIP export (App Store + Play in one archive)
 
-## Publikacja
-- [x] 14. Testy końcowe: pełny przebieg na projekcie mijagi (studio + eksport)
-- [x] 15. Push na GitHub (clone147/frostie) z krótką dokumentacją (README zaktualizowany)
-- [x] 16. Wpis frostie w strefie opensource na szron.tech + deploy strony
+## Release
+- [x] 14. Final tests: full pass on the mijagi project (studio + export)
+- [x] 15. Push to GitHub (clone147/frostie) with short docs (README updated)
+- [x] 16. frostie entry in the open-source section on szron.tech + site deploy
 
-## 0.4.0 — zero zależności od npm goldie (żądanie: „wszystko we frostie")
-- [x] 17. Silnik zvendorowany do engine/ (dist+assets+studio, LICENSE+NOTICE, MIT)
-- [x] 18. scripts/frostie.mjs — własny CLI (doctor/capture/frame/preview/manifest/verify)
-- [x] 19. engine.mjs ładuje silnik z engine/ (sync do ~/.cache/frostie/engine + npm i zależności runtime)
-- [x] 20. Testy na czystym cache: help, frame, play-export, studio apply+verify — wszystko przeszło
-- [x] 21. SKILL.md i README bez komend npx goldie (zostają tylko nazwy plików configu dla kompatybilności)
+## 0.4.0 — zero dependency on npm goldie (request: "everything inside frostie")
+- [x] 17. Engine vendored into engine/ (dist+assets+studio, LICENSE+NOTICE, MIT)
+- [x] 18. scripts/frostie.mjs — own CLI (doctor/capture/frame/preview/manifest/verify)
+- [x] 19. engine.mjs loads the engine from engine/ (sync to ~/.cache/frostie/engine + npm i runtime deps)
+- [x] 20. Tests on a clean cache: help, frame, play-export, studio apply+verify — all passed
+- [x] 21. SKILL.md and README without npx goldie commands (only config file names kept for compatibility)
+
+## 0.4.1 — i18n
+- [x] 22. English as the default language of the CLI, studio UI and docs
+- [x] 23. Polish README (README.pl.md)

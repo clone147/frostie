@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Albert+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* Tokeny SZRON DS (colors/typography/spacing) */
+  /* SZRON DS tokens (colors/typography/spacing) */
   :root{
     --ink:#0C1013; --ink2:#171D21; --ink3:#21272C;
     --line:rgba(255,255,255,.16);
@@ -105,12 +105,12 @@
             <div class="as-name" id="asName"></div>
             <div class="as-sub" id="asSub"></div>
           </div>
-          <button class="as-get" id="asPrice">Gratis</button>
+          <button class="as-get" id="asPrice">Get</button>
         </div>
         <div class="as-meta">
-          <span><b id="asRating"></b>ocena</span>
-          <span><b id="asAge">4+</b>wiek</span>
-          <span><b id="asCat"></b>kategoria</span>
+          <span><b id="asRating"></b>rating</span>
+          <span><b id="asAge">4+</b>age</span>
+          <span><b id="asCat"></b>category</span>
         </div>
         <div class="strip" id="asStrip"></div>
         <video id="asVideo" controls muted style="display:none;max-height:380px;border-radius:14px;margin-top:8px"></video>
@@ -126,7 +126,7 @@
             <div class="pl-dev" id="plDev"></div>
           </div>
         </div>
-        <button class="pl-install">Zainstaluj</button>
+        <button class="pl-install">Install</button>
         <div class="strip" id="plStrip"></div>
         <div class="desc" id="plDesc"></div>
       </div>
@@ -134,31 +134,31 @@
 
     <div class="side">
       <div class="card">
-        <div class="eyebrow">Design — wspólny dla obu sklepów</div>
+        <div class="eyebrow">Design — shared by both stores</div>
 
-        <div class="fld"><span class="lab">Tło (CSS)</span>
+        <div class="fld"><span class="lab">Background (CSS)</span>
           <input type="text" id="bg">
           <div class="presets" id="presets"></div>
         </div>
         <div class="fld"><span class="lab">Font</span><select id="font"></select></div>
         <div class="fld"><span class="lab">Template</span><select id="template"></select></div>
-        <div class="fld"><span class="lab">Layout (wszystkie kafle)</span><select id="layout"></select></div>
-        <div class="fld"><span class="lab">Ramka (wariant)</span><select id="frame"></select></div>
-        <div class="row"><span class="lab">App Store bez ramki (screen-only)</span>
+        <div class="fld"><span class="lab">Layout (all tiles)</span><select id="layout"></select></div>
+        <div class="fld"><span class="lab">Frame (variant)</span><select id="frame"></select></div>
+        <div class="row"><span class="lab">App Store screen-only (no bezel)</span>
           <input type="checkbox" class="switch" id="screenOnly"></div>
-        <div class="row"><span class="lab">Google Play z ramką iPhone'a</span>
+        <div class="row"><span class="lab">Google Play with iPhone bezel</span>
           <input type="checkbox" class="switch" id="playBezel"></div>
 
         <hr>
-        <div class="eyebrow">Nagłówki kafli</div>
+        <div class="eyebrow">Tile headlines</div>
         <div id="scenes"></div>
 
         <hr>
-        <a class="btn" style="display:block;text-align:center;text-decoration:none" href="/api/export" download>Eksport ZIP (oba sklepy)</a>
-        <div class="status" id="status" style="margin-top:10px">Zmiany renderują się na żywo.</div>
+        <a class="btn" style="display:block;text-align:center;text-decoration:none" href="/api/export" download>Export ZIP (both stores)</a>
+        <div class="status" id="status" style="margin-top:10px">Changes render live.</div>
         <div class="check" id="check"></div>
         <hr>
-        <div class="eyebrow">Weryfikacja reguł</div>
+        <div class="eyebrow">Rules verification</div>
         <div class="check" id="verify"></div>
       </div>
     </div>
@@ -180,13 +180,13 @@ function iconBg(bg){ return /gradient/.test(bg) ? bg : "linear-gradient(150deg,#
 
 function render() {
   const s = S;
-  $("title").textContent = s.store.name + " — podgląd obu sklepów";
+  $("title").textContent = s.store.name + " — dual-store preview";
   // App Store
   $("asIcon").style.background = iconBg(s.design.background);
   $("asIcon").textContent = (s.store.name||"A")[0];
   $("asName").textContent = s.store.name;
   $("asSub").textContent = s.store.subtitle;
-  $("asPrice").textContent = s.store.price || "Gratis";
+  $("asPrice").textContent = s.store.price || "Get";
   $("asRating").textContent = s.store.rating || "–";
   $("asCat").textContent = s.store.category || "–";
   $("asDesc").textContent = s.store.description || "";
@@ -201,12 +201,12 @@ function render() {
   $("plStrip").innerHTML = s.play.map(u=>`<img src="${u}?t=${Date.now()}">`).join("");
   // panel
   $("bg").value = s.design.background || "";
-  $("font").innerHTML = s.fonts.map(f=>`<option value="${f}" ${f===s.design.fontFamily?"selected":""}>${f||"(z configu)"}</option>`).join("");
-  $("template").innerHTML = ['<option value="">(z configu)</option>']
+  $("font").innerHTML = s.fonts.map(f=>`<option value="${f}" ${f===s.design.fontFamily?"selected":""}>${f||"(from config)"}</option>`).join("");
+  $("template").innerHTML = ['<option value="">(from config)</option>']
     .concat(s.templates.map(t=>`<option ${t===s.design.template?"selected":""}>${t}</option>`)).join("");
-  $("layout").innerHTML = ['<option value="">(wg template)</option>']
+  $("layout").innerHTML = ['<option value="">(per template)</option>']
     .concat(s.layouts.map(l=>`<option ${l===s.design.layout?"selected":""}>${l}</option>`)).join("");
-  $("frame").innerHTML = ['<option value="">(z configu)</option>']
+  $("frame").innerHTML = ['<option value="">(from config)</option>']
     .concat(s.frames.map(f=>`<option ${f===s.design.frame?"selected":""}>${f}</option>`)).join("");
   $("screenOnly").checked = s.design.screenOnly;
   $("playBezel").checked = s.design.playBezel;
@@ -217,14 +217,14 @@ function render() {
       <div class="row" style="margin-top:0">
         <span class="id">${sc.id}</span>
         <span>
-          <button class="mv" data-dir="-1" title="wyżej">↑</button>
-          <button class="mv" data-dir="1" title="niżej">↓</button>
+          <button class="mv" data-dir="-1" title="up">↑</button>
+          <button class="mv" data-dir="1" title="down">↓</button>
         </span>
       </div>
       <div class="fld"><textarea class="hl" rows="1">${sc.headline}</textarea></div>
       <div class="fld"><textarea class="sh" rows="1" placeholder="subhead">${sc.subhead}</textarea></div>
       <div class="fld"><select class="sl">
-        ${['<option value="">(wg template)</option>'].concat(s.layouts.map(l=>`<option ${l===sc.layout?"selected":""}>${l}</option>`)).join("")}
+        ${['<option value="">(per template)</option>'].concat(s.layouts.map(l=>`<option ${l===sc.layout?"selected":""}>${l}</option>`)).join("")}
       </select></div>
     </div>`).join("");
   document.querySelectorAll(".mv").forEach(b=>b.onclick=()=>{
@@ -234,7 +234,7 @@ function render() {
   });
   document.querySelectorAll(".scene .sl").forEach(t=>t.addEventListener("change", ()=>scheduleApply(150)));
   $("check").innerHTML = s.checklist.map(r=>
-    `Play ${r.locale}: ${r.count} szt. — <span class="${r.promoEligible?"ok":"warn"}">${r.promoEligible?"kwalifikuje się do polecania":"potrzeba ≥4 do polecania"}</span>`
+    `Play ${r.locale}: ${r.count} shots — <span class="${r.promoEligible?"ok":"warn"}">${r.promoEligible?"eligible for large promo formats":"needs ≥4 for promo formats"}</span>`
   ).join("<br>");
 }
 
@@ -244,7 +244,7 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
   $("tab-pl").style.display = t.dataset.tab==="pl"?"":"none";
 });
 
-// ── live-apply: każda zmiana renderuje oba sklepy (debounce, kolejkowanie) ──
+// ── live-apply: every change re-renders both stores (debounced, queued) ──
 let applyTimer = null, applying = false, dirty = false;
 
 function collectBody() {
@@ -272,16 +272,16 @@ function collectBody() {
 async function applyNow() {
   if (applying) { dirty = true; return; }
   applying = true;
-  $("status").textContent = "Renderuję oba sklepy…";
+  $("status").textContent = "Rendering both stores…";
   $("status").classList.remove("err");
   try {
     const r = await fetch("/api/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(collectBody())});
     const j = await r.json();
     if (j.error) throw new Error(j.error);
     S = j.state; renderPreviews();
-    $("status").textContent = "Aktualne ✓ (goldie.design.json zapisany)";
+    $("status").textContent = "Up to date ✓ (goldie.design.json saved)";
   } catch(e) {
-    $("status").textContent = "Błąd: " + e.message;
+    $("status").textContent = "Error: " + e.message;
     $("status").classList.add("err");
   } finally {
     applying = false;
@@ -295,7 +295,7 @@ function scheduleApply(delay = 500) {
   applyTimer = setTimeout(applyNow, delay);
 }
 
-// podgląd bez przebudowy panelu (żeby nie gubić fokusa w polach)
+// refresh previews without rebuilding the panel (keeps field focus)
 function renderPreviews() {
   const s = S;
   $("asIcon").style.background = iconBg(s.design.background);
@@ -304,7 +304,7 @@ function renderPreviews() {
   $("plStrip").innerHTML = s.play.map(u=>`<img src="${u}?t=${Date.now()}">`).join("");
   if (s.fg) $("plFg").src = `/fg?t=${Date.now()}`;
   $("check").innerHTML = s.checklist.map(r=>
-    `Play ${r.locale}: ${r.count} szt. — <span class="${r.promoEligible?"ok":"warn"}">${r.promoEligible?"kwalifikuje się do polecania":"potrzeba ≥4 do polecania"}</span>`
+    `Play ${r.locale}: ${r.count} shots — <span class="${r.promoEligible?"ok":"warn"}">${r.promoEligible?"eligible for large promo formats":"needs ≥4 for promo formats"}</span>`
   ).join("<br>");
   if (s.preview) { $("asVideo").src = s.preview + "?t=" + Date.now(); $("asVideo").style.display = "block"; }
   $("verify").innerHTML = (s.verify||[]).map(v=>

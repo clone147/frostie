@@ -1,5 +1,7 @@
 # frostie ❄️
 
+[Wersja polska → README.pl.md](README.pl.md)
+
 A Claude Code plugin that produces **App Store and Google Play store assets in one
 pass**. Fully self-contained: the rendering/capture engine is vendored in `engine/`
 (a build of [goldie](https://github.com/kacperkapusciak/goldie), MIT — see

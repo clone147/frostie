@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// frostie play-export — zasoby Google Play z istniejącego projektu goldie (CLI).
-// Silnik współdzielony ze studiem frostie: scripts/lib/engine.mjs.
+// frostie play-export — Google Play assets from an existing goldie project (CLI).
+// Engine shared with the frostie studio: scripts/lib/engine.mjs.
 //
-// Użycie:  GOLDIE_CONFIG=<repo>/goldie/goldie.config.ts node play-export.mjs [--bezel]
+// Usage:  GOLDIE_CONFIG=<repo>/goldie/goldie.config.ts node play-export.mjs [--bezel]
 // Wyniki:  out/screenshots/play/<locale>/*.png  +  out/play/feature-graphic.jpg
 
 import {
@@ -21,16 +21,16 @@ const proj = await loadProject(env, cfgPath);
 const bezel = keepBezel || proj.design?.play?.bezel === true;
 
 const fgPath = await renderFeatureGraphic(env, proj);
-console.log(`[frostie] screenshoty Play (1080×1920${bezel ? ", z ramką" : ", screen-only"})`);
+console.log(`[frostie] Play screenshots (1080×1920${bezel ? ", with bezel" : ", screen-only"})`);
 await renderPlay(env, proj, { bezel });
 
-console.log("\n[frostie] gotowe. Checklista Google Play:");
+console.log("\n[frostie] done. Google Play checklist:");
 for (const row of playChecklist(proj.cfg)) {
   const promo = row.promoEligible
-    ? "OK (≥4 → kwalifikują się do dużych formatów polecania)"
-    : "UWAGA: <4 — Play nie użyje appki w dużych formatach polecania";
-  console.log(`  • screenshoty ${row.locale}: ${row.count} szt. 1080×1920 → ${row.dir} — ${promo}`);
+    ? "OK (≥4 → eligible for large promo formats)"
+    : "WARNING: <4 — Play will not use the app in large promo formats";
+  console.log(`  • screenshots ${row.locale}: ${row.count} × 1080×1920 → ${row.dir} — ${promo}`);
 }
-console.log(`  • feature graphic 1024×500 (wymagany): ${fgPath}`);
-console.log("  • ikona 512×512 32-bit PNG — przygotuj osobno (frostie jej nie generuje)");
-console.log("  • wideo: Play przyjmuje TYLKO link YouTube — wrzuć out/previews/**/preview.mp4 na YT (public/unlisted, bez reklam)");
+console.log(`  • feature graphic 1024×500 (mandatory): ${fgPath}`);
+console.log("  • icon 512×512 32-bit PNG — prepare separately (frostie does not generate it)");
+console.log("  • video: Play accepts ONLY a YouTube link — upload out/previews/**/preview.mp4 to YT (public/unlisted, ads off)");

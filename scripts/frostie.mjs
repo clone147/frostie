@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 // frostie CLI — doctor / capture / frame / preview / manifest / verify / help.
-// Uruchamia vendorowany silnik (engine/dist/cli.js) — zero zależności od npm goldie.
+// Runs the vendored engine (engine/dist/cli.js) — no dependency on npm goldie.
 import { spawnSync, execFileSync } from "node:child_process";
 import { existsSync, renameSync } from "node:fs";
 import { join } from "node:path";
 import { engineRoot, loadEngine, loadProject } from "./lib/engine.mjs";
 
-const env = await loadEngine(); // synchronizacja silnika + instalacja zależności przy pierwszym użyciu
+const env = await loadEngine(); // syncs the engine + installs deps on first use
 
-// Segment preview z trimStartSeconds: przytnij surowe nagranie PRZED sklejeniem
-// przez silnik (np. odpalanie web clipa przez Spotlight nie może trafić do wideo
-// App Store). Idempotentne: oryginał ląduje w preview-<id>.orig.mp4, cięcie
-// zawsze startuje z oryginału.
+// Preview segment with trimStartSeconds: cut the head of the raw recording BEFORE
+// the engine joins the clips (e.g. launching a web clip via Spotlight must not end
+// up in the App Store video). Idempotent: the original lands in
+// preview-<id>.orig.mp4 and every trim starts from that original.
 if (process.argv[2] === "preview" && process.env.GOLDIE_CONFIG) {
   const { cfg } = await loadProject(env, process.env.GOLDIE_CONFIG);
   const srcKey = cfg.devices?.[0] ?? "iphone-6.9";

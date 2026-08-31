@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// frostie studio — jedno studio dla obu sklepów: App Store i Google Play.
-// Edycja designu (tło, font, template, layout, bezel, nagłówki) zapisuje się do
-// goldie.design.json (ten sam sidecar, który czyta goldie) i re-renderuje OBA
-// zestawy przez silnik frostie — WYSIWYG po stronie serwera, bez npx.
+// frostie studio — one studio for both stores: App Store and Google Play.
+// Design edits (background, font, template, layout, bezel, headlines) are saved to
+// goldie.design.json (the same sidecar goldie reads) and re-render BOTH asset sets
+// through the frostie engine — server-side WYSIWYG, no npx.
 //
-// Użycie:  GOLDIE_CONFIG=<repo>/goldie/goldie.config.ts node studio.mjs [--port 4322]
+// Usage:  GOLDIE_CONFIG=<repo>/goldie/goldie.config.ts node studio.mjs [--port 4322]
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { createServer } from "node:http";
@@ -18,7 +18,7 @@ import {
 
 const cfgPath = process.env.GOLDIE_CONFIG;
 if (!cfgPath) {
-  console.error("[frostie] ustaw GOLDIE_CONFIG=<repo>/goldie/goldie.config.ts");
+  console.error("[frostie] set GOLDIE_CONFIG=<repo>/goldie/goldie.config.ts");
   process.exit(1);
 }
 const portIdx = process.argv.indexOf("--port");
@@ -94,7 +94,7 @@ function state() {
 }
 
 async function applyAndRender(body) {
-  // merge do istniejącego sidecara — pola goldie zostają nienaruszone
+  // merge into the existing sidecar — goldie-owned fields stay untouched
   const file = designFile(cfgPath);
   let d = {};
   try { d = JSON.parse(readFileSync(file, "utf8")); } catch { /* nowy */ }
@@ -126,7 +126,7 @@ async function applyAndRender(body) {
   }
   writeFileSync(file, JSON.stringify(d, null, 2));
 
-  proj = await loadProject(env, cfgPath); // świeży cfg z nowym designem
+  proj = await loadProject(env, cfgPath); // fresh cfg with the new design
   await renderIOS(env, proj);
   await renderPlay(env, proj, { bezel: d.play.bezel });
   await renderFeatureGraphic(env, proj);
@@ -159,7 +159,7 @@ const server = createServer(async (req, res) => {
       });
       return;
     }
-    // pliki wynikowe
+    // output files
     const cfg = proj.cfg;
     const locale = (cfg.locales ?? ["en-US"])[0];
     const srcLabel = env.goldie.DEVICES[cfg.devices?.[0] ?? "iphone-6.9"].label;
