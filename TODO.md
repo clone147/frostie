@@ -23,4 +23,4 @@ Zasada: odhaczam dopiero po PRZETESTOWANIU danego punktu.
 ## Publikacja
 - [x] 14. Testy końcowe: pełny przebieg na projekcie mijagi (studio + eksport)
 - [x] 15. Push na GitHub (clone147/frostie) z krótką dokumentacją (README zaktualizowany)
-- [ ] 16. Wpis frostie w strefie opensource na szron.tech + deploy strony
+- [x] 16. Wpis frostie w strefie opensource na szron.tech + deploy strony
