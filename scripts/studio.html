@@ -178,12 +178,22 @@ let S = null;
 
 function iconBg(bg){ return /gradient/.test(bg) ? bg : "linear-gradient(150deg,#FA7124,#3C56F4)"; }
 
+// real app icon when the server found one; letter-on-gradient fallback otherwise
+function setIcon(el, s){
+  if (s.icon) {
+    el.style.background = "none";
+    el.innerHTML = `<img src="${s.icon}" alt="" style="width:100%;height:100%;border-radius:inherit;object-fit:cover">`;
+  } else {
+    el.style.background = iconBg(s.design.background);
+    el.textContent = (s.store.name||"A")[0];
+  }
+}
+
 function render() {
   const s = S;
   $("title").textContent = s.store.name + " — dual-store preview";
   // App Store
-  $("asIcon").style.background = iconBg(s.design.background);
-  $("asIcon").textContent = (s.store.name||"A")[0];
+  setIcon($("asIcon"), s);
   $("asName").textContent = s.store.name;
   $("asSub").textContent = s.store.subtitle;
   $("asPrice").textContent = s.store.price || "Get";
@@ -193,8 +203,7 @@ function render() {
   $("asStrip").innerHTML = s.ios.map(u=>`<img src="${u}?t=${Date.now()}">`).join("");
   // Play
   $("plFg").src = s.fg ? `/fg?t=${Date.now()}` : "";
-  $("plIcon").style.background = iconBg(s.design.background);
-  $("plIcon").textContent = (s.store.name||"A")[0];
+  setIcon($("plIcon"), s);
   $("plName").textContent = s.store.name;
   $("plDev").textContent = s.store.developer || s.store.category || "";
   $("plDesc").textContent = s.store.description || "";
@@ -298,8 +307,7 @@ function scheduleApply(delay = 500) {
 // refresh previews without rebuilding the panel (keeps field focus)
 function renderPreviews() {
   const s = S;
-  $("asIcon").style.background = iconBg(s.design.background);
-  $("plIcon").style.background = iconBg(s.design.background);
+  setIcon($("asIcon"), s); setIcon($("plIcon"), s);
   $("asStrip").innerHTML = s.ios.map(u=>`<img src="${u}?t=${Date.now()}">`).join("");
   $("plStrip").innerHTML = s.play.map(u=>`<img src="${u}?t=${Date.now()}">`).join("");
   if (s.fg) $("plFg").src = `/fg?t=${Date.now()}`;

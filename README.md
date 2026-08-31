@@ -26,6 +26,12 @@ pass**. Fully self-contained: the rendering/capture engine is vendored in `engin
 One config (`goldie/goldie.config.ts`), one set of flows (`.argent/flows/`), one design —
 any existing goldie project works with frostie unchanged.
 
+## Studio
+
+| App Store | Google Play |
+|---|---|
+| ![frostie studio — App Store view](docs/studio-appstore.png) | ![frostie studio — Google Play view](docs/studio-play.png) |
+
 ## Install
 
 As a Claude Code plugin (bundles the argent MCP server):

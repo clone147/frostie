@@ -50,6 +50,9 @@ const config: GoldieConfig = {
     name: "AppName",
     subtitle: { "en-US": "Under 30 characters, Apple's limit" },
     developer: "Company Name",
+    // icon: "../app/public/icon-1024.png",  optional; the studio auto-detects one
+    //   otherwise: AppIcon*.png in the .app bundle, then public/icon-*.png /
+    //   apple-touch-icon.png under appRoot (covers web apps with a stub .app)
     category: "Productivity",
     rating: 4.8,                 // cosmetic, studio only
     ratingCount: "1.2K Ratings",

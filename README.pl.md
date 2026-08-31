@@ -26,6 +26,12 @@ przebiegu**. W pełni samodzielny: silnik renderowania/przechwytywania jest zven
 Jeden config (`goldie/goldie.config.ts`), jeden zestaw flow (`.argent/flows/`), jeden
 design — każdy istniejący projekt goldie działa z frostie bez zmian.
 
+## Studio
+
+| App Store | Google Play |
+|---|---|
+| ![Studio frostie — widok App Store](docs/studio-appstore.png) | ![Studio frostie — widok Google Play](docs/studio-play.png) |
+
 ## Instalacja
 
 Jako plugin Claude Code (bundluje serwer MCP argent):
