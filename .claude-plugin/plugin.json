@@ -1,0 +1,10 @@
+{
+  "name": "frostie",
+  "version": "0.3.0",
+  "description": "App Store AND Google Play store assets in one pass: argent flows on a simulator, framed screenshots, preview video, feature graphic, and a dual-store live studio.",
+  "author": { "name": "Tomek Wojciechowski" },
+  "homepage": "https://github.com/clone147/frostie",
+  "repository": "https://github.com/clone147/frostie",
+  "license": "MIT",
+  "keywords": ["app-store", "google-play", "screenshots", "feature-graphic", "argent"]
+}

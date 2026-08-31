@@ -10,9 +10,10 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { createServer } from "node:http";
 import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 import {
-  designFile, FONT_FAMILIES, loadEngine, loadProject, pickText, playChecklist,
-  renderFeatureGraphic, renderIOS, renderPlay,
+  designFile, FONT_FAMILIES, FRAME_VARIANTS, loadEngine, loadProject, pickText, playChecklist,
+  renderFeatureGraphic, renderIOS, renderPlay, verifyAll,
 } from "./lib/engine.mjs";
 
 const cfgPath = process.env.GOLDIE_CONFIG;
@@ -69,13 +70,16 @@ function state() {
       layout: proj.design.layout ?? "",
       screenOnly: proj.cfg.theme.screenOnly === true,
       playBezel: proj.design.play?.bezel === true,
+      frame: proj.design.frame ?? proj.cfg.frame?.variant ?? "",
     },
+    frames: FRAME_VARIANTS,
     scenes: proj.cfg.scenes
       .filter((s) => s.headline)
       .map((s) => ({
         id: s.id,
         headline: pickText(s.headline, locale),
         subhead: s.subhead ? pickText(s.subhead, locale) : "",
+        layout: proj.cfg.sceneLayouts?.[s.id] ?? "",
       })),
     templates: env.goldie.TEMPLATE_KEYS,
     layouts: env.goldie.LAYOUT_KEYS,
@@ -83,7 +87,9 @@ function state() {
     ios: list(iosDir).map((f) => `/shots/ios/${f}`),
     play: list(playDir).map((f) => `/shots/play/${f}`),
     fg: existsSync(join(cfg.outDir, "play", "feature-graphic.jpg")) ? "/fg" : null,
+    preview: existsSync(join(cfg.outDir, "previews", srcLabel, locale, "preview.mp4")) ? "/preview.mp4" : null,
     checklist: playChecklist(cfg),
+    verify: verifyAll(env, proj),
   };
 }
 
@@ -97,6 +103,15 @@ async function applyAndRender(body) {
   if (body.template !== undefined) d.template = body.template ?? "";
   if (body.layout !== undefined) d.layout = body.layout || undefined;
   if (body.screenOnly !== undefined) d.screenOnly = !!body.screenOnly;
+  if (body.frame !== undefined) d.frame = body.frame || undefined;
+  if (Array.isArray(body.order)) d.order = body.order;
+  if (body.sceneLayouts) {
+    d.sceneLayouts = { ...d.sceneLayouts };
+    for (const [id, l] of Object.entries(body.sceneLayouts)) {
+      if (l) d.sceneLayouts[id] = l; else delete d.sceneLayouts[id];
+    }
+    if (!Object.keys(d.sceneLayouts).length) delete d.sceneLayouts;
+  }
   d.play = { ...d.play, bezel: !!body.playBezel };
   if (body.copy) {
     d.copy = d.copy ?? {};
@@ -154,6 +169,23 @@ const server = createServer(async (req, res) => {
     else if (url.pathname.startsWith("/shots/play/"))
       file = join(cfg.outDir, "screenshots", "play", locale, normalize(url.pathname.slice(12)));
     else if (url.pathname === "/fg") file = join(cfg.outDir, "play", "feature-graphic.jpg");
+    else if (url.pathname === "/preview.mp4") file = join(cfg.outDir, "previews", srcLabel, locale, "preview.mp4");
+    else if (url.pathname === "/api/export") {
+      const zipPath = join(cfg.outDir, "frostie-export.zip");
+      try {
+        execFileSync("rm", ["-f", zipPath]);
+        const parts = ["screenshots", "play", "previews"].filter((d2) => existsSync(join(cfg.outDir, d2)));
+        execFileSync("zip", ["-r", "-q", zipPath, ...parts], { cwd: cfg.outDir });
+        res.writeHead(200, {
+          "Content-Type": "application/zip",
+          "Content-Disposition": 'attachment; filename="frostie-export.zip"',
+        });
+        res.end(readFileSync(zipPath));
+      } catch (e) {
+        json(res, { error: String(e.message ?? e) }, 500);
+      }
+      return;
+    }
     if (file && !file.includes("..") && existsSync(file)) {
       res.writeHead(200, {
         "Content-Type": MIME[extname(file)] ?? "application/octet-stream",

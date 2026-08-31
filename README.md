@@ -1,57 +1,61 @@
 # frostie ❄️
 
-A Claude Code skill that produces **App Store and Google Play store assets in one pass**.
+A Claude Code plugin that produces **App Store and Google Play store assets in one
+pass** — a standalone superset of the [goldie](https://github.com/kacperkapusciak/goldie)
+workflow (goldie's MIT-licensed npm package is used internally as the rendering engine).
 
-frostie is a superset of the excellent [goldie](https://github.com/kacperkapusciak/goldie)
-workflow: goldie handles the iOS side (argent flows replayed on a simulator, framed
-screenshots, a plain app-preview video, a local WYSIWYG studio), and frostie adds the
-Google Play layer goldie lacks:
+## What it does
 
-- **Phone screenshots 1080×1920** (9:16 portrait) rendered from the *same* captures,
-  layouts, background and copy as your App Store strip — both stores stay in sync from
-  one config, one set of flows, one design.
-- **Feature graphic 1024×500** (mandatory on Play) — composed from your theme
-  background, app name + subtitle in the theme font, and a live capture bleeding off
-  the edge. Exported as JPEG (Play rejects PNGs with an alpha channel).
-- **Screen-only by default** — no Apple hardware bezels on a Google Play listing
-  (pass `--bezel` if you insist).
-- **A Play-rules checklist** — screenshot counts and promotion eligibility (≥4 shots
-  at ≥1080 px), reminders about the 512×512 icon and the YouTube-only preview video.
+- **iOS / App Store**: explores your app on a simulator over [argent](https://github.com/software-mansion/argent)
+  (bundled MCP server), replays argent YAML flows, captures raw screens and clips, and
+  renders framed screenshots + a plain app-preview video (`npx goldie@0` engine).
+- **Google Play**: re-renders the *same* captures and design at Play's specs —
+  **1080×1920** phone screenshots (≥4 qualify for large recommendation formats) and the
+  mandatory **1024×500 feature graphic** (JPEG; Play rejects alpha PNGs). Screen-only by
+  default — no Apple hardware on a Play listing.
+- **Dual-store live studio** (`http://localhost:4322`): the App Store product page and
+  the Play listing side by side, edited together. Background, font, template, global and
+  per-tile layout, tile order (↑/↓), bezel variant, screen-only / Play-bezel toggles and
+  per-tile headlines — every change auto-saves the shared `goldie.design.json` and
+  re-renders **both** stores server-side in about a second. Plus an Apple + Play rules
+  verification panel and a one-click **upload-ready ZIP export** of both stores' assets.
 
-- **Its own studio** (`scripts/studio.mjs`, port 4322) — the App Store page and the
-  Play listing in one UI, edited together: one Design panel writes the shared
-  `goldie.design.json` and re-renders **both** stores server-side in seconds.
+One config (`goldie/goldie.config.ts`), one set of flows (`.argent/flows/`), one design —
+any existing goldie project works with frostie unchanged.
 
 ## Install
 
-Copy this directory to `~/.claude/skills/frostie/` (or add it as a plugin skill).
-Claude Code picks it up automatically; say "make store screenshots" or "/frostie".
+As a Claude Code plugin (bundles the argent MCP server):
+
+```
+/plugin marketplace add clone147/frostie
+/plugin install frostie@frostie
+```
+
+Or as a plain user skill: clone into `~/.claude/skills/frostie/` (argent must then be
+available separately). Requirements: macOS with Xcode simulators, Node 20+, `ffmpeg`.
 
 ## Usage
 
-Stage 1 (iOS) is the goldie skill, unchanged. Then either open the dual-store studio:
+Say "make store screenshots" (or `/frostie`) inside the app's repo — Claude drives the
+whole pipeline. By hand:
 
 ```bash
-GOLDIE_CONFIG=<app-repo>/goldie/goldie.config.ts node scripts/studio.mjs
-# → http://localhost:4322 — App Store + Google Play tabs, shared design panel
+export GOLDIE_CONFIG=<app-repo>/goldie/goldie.config.ts
+npx -y goldie@0 doctor && npx -y goldie@0 capture && npx -y goldie@0 frame
+node scripts/play-export.mjs      # Google Play set + feature graphic (+ --bezel)
+node scripts/studio.mjs           # dual-store live studio → http://localhost:4322
+npx -y goldie@0 preview           # 15–30 s App Store preview video
 ```
 
-or run the headless Play export:
+Outputs: `out/screenshots/<device>/`, `out/screenshots/play/<locale>/`,
+`out/play/feature-graphic.jpg`, `out/previews/**/preview.mp4`, and
+`out/frostie-export.zip` from the studio's Export button.
 
-```bash
-GOLDIE_CONFIG=<app-repo>/goldie/goldie.config.ts \
-  node scripts/play-export.mjs          # add --bezel to keep the device frame
-```
-
-Outputs land next to goldie's: `out/screenshots/play/<locale>/*.png` and
-`out/play/feature-graphic.jpg`.
-
-## Requirements
-
-Node 20+, ffmpeg, and a goldie project with captures (`goldie capture` run at least
-once). The script self-installs its copy of the goldie engine into `~/.cache/frostie/`
-on first run.
+Docs: `skills/frostie/SKILL.md` (full workflow), `skills/frostie/references/config.md`
+(config schema), `skills/frostie/references/flows.md` (flow YAML).
 
 ## License
 
-MIT
+MIT. Rendering engine: [goldie](https://github.com/kacperkapusciak/goldie) (MIT) by
+Kacper Kapuściak, used as a pinned npm dependency.

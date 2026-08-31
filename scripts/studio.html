@@ -81,6 +81,8 @@
   .scene{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
   .scene .id{font-family:var(--disp);font-size:14px;color:var(--tx3)}
   hr{border:none;border-top:1px solid var(--line);margin:16px 0}
+  .mv{background:var(--ink3);color:var(--tx2);border:1px solid var(--line);border-radius:8px;
+      width:30px;height:30px;cursor:pointer;font-size:14px}
 </style>
 </head>
 <body>
@@ -111,6 +113,7 @@
           <span><b id="asCat"></b>kategoria</span>
         </div>
         <div class="strip" id="asStrip"></div>
+        <video id="asVideo" controls muted style="display:none;max-height:380px;border-radius:14px;margin-top:8px"></video>
         <div class="desc" id="asDesc"></div>
       </div>
 
@@ -140,6 +143,7 @@
         <div class="fld"><span class="lab">Font</span><select id="font"></select></div>
         <div class="fld"><span class="lab">Template</span><select id="template"></select></div>
         <div class="fld"><span class="lab">Layout (wszystkie kafle)</span><select id="layout"></select></div>
+        <div class="fld"><span class="lab">Ramka (wariant)</span><select id="frame"></select></div>
         <div class="row"><span class="lab">App Store bez ramki (screen-only)</span>
           <input type="checkbox" class="switch" id="screenOnly"></div>
         <div class="row"><span class="lab">Google Play z ramką iPhone'a</span>
@@ -150,8 +154,12 @@
         <div id="scenes"></div>
 
         <hr>
-        <div class="status" id="status">Zmiany renderują się na żywo.</div>
+        <a class="btn" style="display:block;text-align:center;text-decoration:none" href="/api/export" download>Eksport ZIP (oba sklepy)</a>
+        <div class="status" id="status" style="margin-top:10px">Zmiany renderują się na żywo.</div>
         <div class="check" id="check"></div>
+        <hr>
+        <div class="eyebrow">Weryfikacja reguł</div>
+        <div class="check" id="verify"></div>
       </div>
     </div>
   </div>
@@ -198,16 +206,33 @@ function render() {
     .concat(s.templates.map(t=>`<option ${t===s.design.template?"selected":""}>${t}</option>`)).join("");
   $("layout").innerHTML = ['<option value="">(wg template)</option>']
     .concat(s.layouts.map(l=>`<option ${l===s.design.layout?"selected":""}>${l}</option>`)).join("");
+  $("frame").innerHTML = ['<option value="">(z configu)</option>']
+    .concat(s.frames.map(f=>`<option ${f===s.design.frame?"selected":""}>${f}</option>`)).join("");
   $("screenOnly").checked = s.design.screenOnly;
   $("playBezel").checked = s.design.playBezel;
   $("presets").innerHTML = PRESETS.map(p=>`<div class="preset" style="background:${p}" data-bg="${p}"></div>`).join("");
   document.querySelectorAll(".preset").forEach(el=>el.onclick=()=>{$("bg").value=el.dataset.bg;scheduleApply(150);});
   $("scenes").innerHTML = s.scenes.map(sc=>`
     <div class="scene" data-id="${sc.id}">
-      <div class="id">${sc.id}</div>
+      <div class="row" style="margin-top:0">
+        <span class="id">${sc.id}</span>
+        <span>
+          <button class="mv" data-dir="-1" title="wyżej">↑</button>
+          <button class="mv" data-dir="1" title="niżej">↓</button>
+        </span>
+      </div>
       <div class="fld"><textarea class="hl" rows="1">${sc.headline}</textarea></div>
       <div class="fld"><textarea class="sh" rows="1" placeholder="subhead">${sc.subhead}</textarea></div>
+      <div class="fld"><select class="sl">
+        ${['<option value="">(wg template)</option>'].concat(s.layouts.map(l=>`<option ${l===sc.layout?"selected":""}>${l}</option>`)).join("")}
+      </select></div>
     </div>`).join("");
+  document.querySelectorAll(".mv").forEach(b=>b.onclick=()=>{
+    const el=b.closest(".scene"), dir=Number(b.dataset.dir);
+    const sib=dir<0?el.previousElementSibling:el.nextElementSibling;
+    if(sib&&sib.classList.contains("scene")){ dir<0?el.parentNode.insertBefore(el,sib):el.parentNode.insertBefore(sib,el); scheduleApply(150); }
+  });
+  document.querySelectorAll(".scene .sl").forEach(t=>t.addEventListener("change", ()=>scheduleApply(150)));
   $("check").innerHTML = s.checklist.map(r=>
     `Play ${r.locale}: ${r.count} szt. — <span class="${r.promoEligible?"ok":"warn"}">${r.promoEligible?"kwalifikuje się do polecania":"potrzeba ≥4 do polecania"}</span>`
   ).join("<br>");
@@ -223,21 +248,24 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
 let applyTimer = null, applying = false, dirty = false;
 
 function collectBody() {
-  const copy = {};
+  const copy = {}, order = [], sceneLayouts = {};
   document.querySelectorAll(".scene").forEach(el=>{
+    order.push(el.dataset.id);
     copy[el.dataset.id] = {
       headline: el.querySelector(".hl").value,
       subhead: el.querySelector(".sh").value,
     };
+    sceneLayouts[el.dataset.id] = el.querySelector(".sl").value;
   });
   return {
     background: $("bg").value.trim(),
     fontFamily: $("font").value,
     template: $("template").value,
     layout: $("layout").value,
+    frame: $("frame").value,
     screenOnly: $("screenOnly").checked,
     playBezel: $("playBezel").checked,
-    copy,
+    copy, order, sceneLayouts,
   };
 }
 
@@ -278,17 +306,21 @@ function renderPreviews() {
   $("check").innerHTML = s.checklist.map(r=>
     `Play ${r.locale}: ${r.count} szt. — <span class="${r.promoEligible?"ok":"warn"}">${r.promoEligible?"kwalifikuje się do polecania":"potrzeba ≥4 do polecania"}</span>`
   ).join("<br>");
+  if (s.preview) { $("asVideo").src = s.preview + "?t=" + Date.now(); $("asVideo").style.display = "block"; }
+  $("verify").innerHTML = (s.verify||[]).map(v=>
+    `<span class="${v.ok?"ok":"warn"}">${v.ok?"✓":"✗"}</span> <b>${v.store}</b> ${v.item} — ${v.detail}`
+  ).join("<br>");
 }
 
 function wireLive() {
   $("bg").addEventListener("input", ()=>scheduleApply(700));
-  ["font","template","layout"].forEach(id=>$(id).addEventListener("change", ()=>scheduleApply(150)));
+  ["font","template","layout","frame"].forEach(id=>$(id).addEventListener("change", ()=>scheduleApply(150)));
   ["screenOnly","playBezel"].forEach(id=>$(id).addEventListener("change", ()=>scheduleApply(150)));
   document.querySelectorAll(".scene textarea").forEach(t=>t.addEventListener("input", ()=>scheduleApply(900)));
   document.querySelectorAll(".preset").forEach(el=>el.addEventListener("click", ()=>scheduleApply(150)));
 }
 
-fetch("/api/state").then(r=>r.json()).then(s=>{S=s;render();wireLive();});
+fetch("/api/state").then(r=>r.json()).then(s=>{S=s;render();renderPreviews();wireLive();});
 </script>
 </body>
 </html>

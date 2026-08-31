@@ -2,7 +2,7 @@
 // Importuje zbundlowany silnik goldie (self-install do ~/.cache/frostie) i dokłada
 // warstwę frostie: merge goldie.design.json, urządzenie Play 1080×1920, feature graphic.
 
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import {
   existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync,
 } from "node:fs";
@@ -71,6 +71,13 @@ export function applyDesign(cfg, d) {
   if (d.layout) cfg.theme.layout = d.layout;
   if (d.screenOnly !== undefined) cfg.theme.screenOnly = d.screenOnly;
   if (d.sceneLayouts) cfg.sceneLayouts = { ...cfg.sceneLayouts, ...d.sceneLayouts };
+  if (Array.isArray(d.order) && d.order.length) {
+    const shots = cfg.scenes.filter((sc) => sc.headline);
+    const others = cfg.scenes.filter((sc) => !sc.headline);
+    const pos = new Map(d.order.map((id, i) => [id, i]));
+    shots.sort((a, b) => (pos.get(a.id) ?? 999) - (pos.get(b.id) ?? 999));
+    cfg.scenes = [...shots, ...others];
+  }
   if (d.copy) {
     for (const scene of cfg.scenes) {
       const copy = d.copy[scene.id];
@@ -252,5 +259,67 @@ export function playChecklist(cfg) {
     const n = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".png")).length : 0;
     rows.push({ locale, count: n, promoEligible: n >= 4, dir });
   }
+  return rows;
+}
+
+/** Warianty ramki dostępne w silniku (assets goldie). */
+export const FRAME_VARIANTS = ["17-pro-silver", "17-pro-blue", "17-pro-orange"];
+
+function probeImage(file) {
+  const out = execFileSync("sips", ["-g", "pixelWidth", "-g", "pixelHeight", "-g", "hasAlpha", file], { encoding: "utf8" });
+  return {
+    width: Number(/pixelWidth:\s*(\d+)/.exec(out)?.[1]),
+    height: Number(/pixelHeight:\s*(\d+)/.exec(out)?.[1]),
+    alpha: /hasAlpha:\s*yes/.test(out),
+  };
+}
+
+/** Strukturalna weryfikacja reguł Apple + Google Play (dla panelu w studiu). */
+export function verifyAll(env, proj) {
+  const cfg = proj.cfg;
+  const rows = [];
+  const srcKey = cfg.devices?.[0] ?? "iphone-6.9";
+  const spec = env.goldie.DEVICES[srcKey];
+  for (const locale of cfg.locales ?? ["en-US"]) {
+    const iosDir = join(cfg.outDir, "screenshots", spec.label, locale);
+    const iosFiles = existsSync(iosDir) ? readdirSync(iosDir).filter((f) => f.endsWith(".png")) : [];
+    rows.push({ store: "App Store", item: `screenshoty ${locale}: ${iosFiles.length} szt.`, ok: iosFiles.length >= 1 && iosFiles.length <= 10, detail: "1–10 na rodzinę urządzeń" });
+    for (const f of iosFiles) {
+      const m = probeImage(join(iosDir, f));
+      const ok = m.width === spec.screenshot.width && m.height === spec.screenshot.height && !m.alpha;
+      rows.push({ store: "App Store", item: f, ok, detail: ok ? `${m.width}×${m.height}` : `${m.width}×${m.height}${m.alpha ? " +alfa" : ""}, oczekiwane ${spec.screenshot.width}×${spec.screenshot.height} bez alfy` });
+    }
+    const playDir = join(cfg.outDir, "screenshots", "play", locale);
+    const playFiles = existsSync(playDir) ? readdirSync(playDir).filter((f) => f.endsWith(".png")) : [];
+    rows.push({ store: "Google Play", item: `screenshoty ${locale}: ${playFiles.length} szt.`, ok: playFiles.length >= 2 && playFiles.length <= 8, detail: "2–8 szt." });
+    rows.push({ store: "Google Play", item: `promowanie ${locale}`, ok: playFiles.length >= 4, detail: "≥4 szt. przy ≥1080 px dla dużych formatów polecania" });
+    for (const f of playFiles) {
+      const m = probeImage(join(playDir, f));
+      const ok = m.width === 1080 && m.height === 1920 && !m.alpha;
+      rows.push({ store: "Google Play", item: f, ok, detail: ok ? "1080×1920" : `${m.width}×${m.height}${m.alpha ? " +alfa" : ""}, oczekiwane 1080×1920 bez alfy` });
+    }
+    const mp4 = join(cfg.outDir, "previews", spec.label, locale, "preview.mp4");
+    if (existsSync(mp4)) {
+      try {
+        const out = execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration,size", "-of", "json", mp4], { encoding: "utf8" });
+        const fmt = JSON.parse(out).format;
+        const dur = Number(fmt.duration);
+        const okDur = dur >= 15 && dur <= 30;
+        rows.push({ store: "App Store", item: `preview.mp4 ${locale}`, ok: okDur, detail: `${dur.toFixed(1)} s (wymagane 15–30 s), ${(Number(fmt.size) / 1e6).toFixed(1)} MB` });
+      } catch { rows.push({ store: "App Store", item: `preview.mp4 ${locale}`, ok: false, detail: "ffprobe nie odczytał pliku" }); }
+    } else {
+      rows.push({ store: "App Store", item: `preview.mp4 ${locale}`, ok: false, detail: "brak — uruchom: goldie preview" });
+    }
+  }
+  const fg = join(cfg.outDir, "play", "feature-graphic.jpg");
+  if (existsSync(fg)) {
+    const m = probeImage(fg);
+    const ok = m.width === 1024 && m.height === 500;
+    rows.push({ store: "Google Play", item: "feature-graphic.jpg", ok, detail: ok ? "1024×500" : `${m.width}×${m.height}, wymagane 1024×500` });
+  } else {
+    rows.push({ store: "Google Play", item: "feature-graphic.jpg", ok: false, detail: "brak — wymagany na Play" });
+  }
+  rows.push({ store: "Google Play", item: "ikona 512×512 32-bit PNG", ok: false, detail: "poza zakresem frostie — przygotuj osobno" });
+  rows.push({ store: "Google Play", item: "wideo", ok: true, detail: "tylko link YouTube (public/unlisted, bez reklam) — użyj preview.mp4" });
   return rows;
 }

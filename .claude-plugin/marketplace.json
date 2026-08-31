@@ -1,0 +1,12 @@
+{
+  "name": "frostie",
+  "owner": { "name": "Tomek Wojciechowski" },
+  "plugins": [
+    {
+      "name": "frostie",
+      "source": "./",
+      "description": "App Store AND Google Play store assets in one pass, with a dual-store live studio.",
+      "category": "productivity"
+    }
+  ]
+}
