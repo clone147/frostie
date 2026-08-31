@@ -1,14 +1,15 @@
 # frostie ❄️
 
 A Claude Code plugin that produces **App Store and Google Play store assets in one
-pass** — a standalone superset of the [goldie](https://github.com/kacperkapusciak/goldie)
-workflow (goldie's MIT-licensed npm package is used internally as the rendering engine).
+pass**. Fully self-contained: the rendering/capture engine is vendored in `engine/`
+(a build of [goldie](https://github.com/kacperkapusciak/goldie), MIT — see
+`engine/NOTICE.md`), the argent MCP server is bundled via `.mcp.json`.
 
 ## What it does
 
 - **iOS / App Store**: explores your app on a simulator over [argent](https://github.com/software-mansion/argent)
   (bundled MCP server), replays argent YAML flows, captures raw screens and clips, and
-  renders framed screenshots + a plain app-preview video (`npx goldie@0` engine).
+  renders framed screenshots + a plain app-preview video.
 - **Google Play**: re-renders the *same* captures and design at Play's specs —
   **1080×1920** phone screenshots (≥4 qualify for large recommendation formats) and the
   mandatory **1024×500 feature graphic** (JPEG; Play rejects alpha PNGs). Screen-only by
@@ -42,10 +43,10 @@ whole pipeline. By hand:
 
 ```bash
 export GOLDIE_CONFIG=<app-repo>/goldie/goldie.config.ts
-npx -y goldie@0 doctor && npx -y goldie@0 capture && npx -y goldie@0 frame
+node scripts/frostie.mjs doctor && node scripts/frostie.mjs capture && node scripts/frostie.mjs frame
 node scripts/play-export.mjs      # Google Play set + feature graphic (+ --bezel)
 node scripts/studio.mjs           # dual-store live studio → http://localhost:4322
-npx -y goldie@0 preview           # 15–30 s App Store preview video
+node scripts/frostie.mjs preview  # 15–30 s App Store preview video
 ```
 
 Outputs: `out/screenshots/<device>/`, `out/screenshots/play/<locale>/`,
@@ -57,5 +58,8 @@ Docs: `skills/frostie/SKILL.md` (full workflow), `skills/frostie/references/conf
 
 ## License
 
-MIT. Rendering engine: [goldie](https://github.com/kacperkapusciak/goldie) (MIT) by
-Kacper Kapuściak, used as a pinned npm dependency.
+MIT. The vendored engine build in `engine/` comes from
+[goldie](https://github.com/kacperkapusciak/goldie) (MIT) by Kacper Kapuściak —
+see `engine/LICENSE` and `engine/NOTICE.md`. Config file names
+(`goldie.config.ts`, `goldie.design.json`) are kept for drop-in compatibility
+with existing projects.

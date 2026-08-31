@@ -19,15 +19,24 @@ export const FONT_FAMILIES = {
   montserrat: '"Montserrat", system-ui, sans-serif',
 };
 
+/** Katalog silnika: vendorowany engine/ z repo frostie, zsynchronizowany do cache
+ *  (npm install zależności robimy w cache, nie w katalogu pluginu). */
+export function engineRoot() {
+  return join(homedir(), ".cache", "frostie", "engine");
+}
+
 export async function loadEngine() {
-  const PREFIX = join(homedir(), ".cache", "frostie");
-  const pkgRoot = join(PREFIX, "node_modules", "goldie");
-  if (!existsSync(join(pkgRoot, "dist", "index.js"))) {
-    mkdirSync(PREFIX, { recursive: true });
-    console.log("[frostie] instaluję goldie do cache…");
-    execSync(`npm install --prefix "${PREFIX}" goldie@0 --no-audit --no-fund --loglevel=error`, {
-      stdio: "inherit",
-    });
+  const vendored = resolve(dirname(new URL(import.meta.url).pathname), "..", "..", "engine");
+  const pkgRoot = engineRoot();
+  const verFile = join(pkgRoot, ".vendored-version");
+  const wanted = JSON.parse(readFileSync(join(vendored, "package.json"), "utf8")).version;
+  const have = existsSync(verFile) ? readFileSync(verFile, "utf8").trim() : "";
+  if (have !== wanted || !existsSync(join(pkgRoot, "node_modules"))) {
+    mkdirSync(pkgRoot, { recursive: true });
+    console.log("[frostie] synchronizuję silnik do cache…");
+    execSync(`rsync -a --delete --exclude node_modules "${vendored}/" "${pkgRoot}/"`);
+    execSync(`npm install --omit=dev --no-audit --no-fund --loglevel=error`, { cwd: pkgRoot, stdio: "inherit" });
+    writeFileSync(verFile, wanted);
   }
   const goldie = await import(pathToFileURL(join(pkgRoot, "dist", "index.js")).href);
   const req = createRequire(join(pkgRoot, "package.json"));

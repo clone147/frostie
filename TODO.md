@@ -24,3 +24,10 @@ Zasada: odhaczam dopiero po PRZETESTOWANIU danego punktu.
 - [x] 14. Testy końcowe: pełny przebieg na projekcie mijagi (studio + eksport)
 - [x] 15. Push na GitHub (clone147/frostie) z krótką dokumentacją (README zaktualizowany)
 - [x] 16. Wpis frostie w strefie opensource na szron.tech + deploy strony
+
+## 0.4.0 — zero zależności od npm goldie (żądanie: „wszystko we frostie")
+- [x] 17. Silnik zvendorowany do engine/ (dist+assets+studio, LICENSE+NOTICE, MIT)
+- [x] 18. scripts/frostie.mjs — własny CLI (doctor/capture/frame/preview/manifest/verify)
+- [x] 19. engine.mjs ładuje silnik z engine/ (sync do ~/.cache/frostie/engine + npm i zależności runtime)
+- [x] 20. Testy na czystym cache: help, frame, play-export, studio apply+verify — wszystko przeszło
+- [x] 21. SKILL.md i README bez komend npx goldie (zostają tylko nazwy plików configu dla kompatybilności)

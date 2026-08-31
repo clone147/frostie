@@ -1,0 +1,13 @@
+{
+  "name": "frostie-engine",
+  "private": true,
+  "version": "0.2.1",
+  "description": "frostie rendering engine — vendored build of goldie 0.2.1 (MIT, Kacper Kapusciak, https://github.com/kacperkapusciak/goldie)",
+  "type": "module",
+  "bin": { "frostie-engine": "dist/cli.js" },
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.8",
+    "@swmansion/argent": "^0.22.0",
+    "jiti": "^2.6.0"
+  }
+}

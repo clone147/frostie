@@ -23,8 +23,8 @@ copy; the preview video is the raw recordings joined as-is (Apple requires a
 plain screen recording); the Google Play set is re-rendered from the same
 captures and design at Play's specs (1080×1920 + a 1024×500 feature
 graphic). One config, one set of flows, one design — both stores stay in
-sync. The rendering engine is the pinned npm package `goldie@0` (MIT), used
-as a library; frostie's own studio at http://localhost:4322 shows both store
+sync. The rendering engine is vendored inside frostie
+(`engine/`, MIT); frostie's own studio at http://localhost:4322 shows both store
 pages live. Your job is everything the pipeline cannot do alone: pick the
 screens worth marketing, author the flows, write the copy, drive the stages.
 
@@ -51,18 +51,18 @@ lands in `goldie.design.json`).
 
 ## Step 0: Make sure the engine runs
 
-The engine is an npm package; nothing needs cloning:
+The engine ships inside frostie (`engine/` — vendored, no external package):
 
 ```bash
-npx -y goldie@0 help
+node <frostie-root>/scripts/frostie.mjs help
 ```
 
+`<frostie-root>` is two directories above this SKILL.md (the repo root).
 Every engine command below is `GOLDIE_CONFIG=<app-repo>/goldie/goldie.config.ts
-npx -y goldie@0 <cmd>` (shell state does not persist between Bash calls, so
-prefix every command). Needs Node 20+ and `ffmpeg` on the PATH
-(`brew install ffmpeg`). frostie's own scripts live in this plugin's repo:
-`<frostie-root>/scripts/{studio.mjs,play-export.mjs}` where `<frostie-root>`
-is two directories above this SKILL.md (the repo root).
+node <frostie-root>/scripts/frostie.mjs <cmd>` (shell state does not persist
+between Bash calls, so prefix every command). The first run syncs the engine
+to `~/.cache/frostie/engine` and installs its deps. Needs Node 20+ and
+`ffmpeg` on the PATH (`brew install ffmpeg`).
 
 ## Step 1: Gather app facts
 
@@ -121,16 +121,16 @@ the config and flows. Each flow is runnable alone with
 ## Step 4: Doctor, then capture
 
 ```bash
-GOLDIE_CONFIG=... npx -y goldie@0 doctor
+GOLDIE_CONFIG=... node <frostie-root>/scripts/frostie.mjs doctor
 ```
 
 Fix everything doctor flags (usual: argent video watermark flag, screenshot
 scale override, a Debug build). Then capture and render stills:
 
 ```bash
-GOLDIE_CONFIG=... npx -y goldie@0 capture
-GOLDIE_CONFIG=... npx -y goldie@0 frame
-GOLDIE_CONFIG=... npx -y goldie@0 manifest
+GOLDIE_CONFIG=... node <frostie-root>/scripts/frostie.mjs capture
+GOLDIE_CONFIG=... node <frostie-root>/scripts/frostie.mjs frame
+GOLDIE_CONFIG=... node <frostie-root>/scripts/frostie.mjs manifest
 ```
 
 `capture` replays every flow including preview segments, so raw clips exist
@@ -178,12 +178,13 @@ Play rule validation.
 Meanwhile render the preview video in the background:
 
 ```bash
-GOLDIE_CONFIG=... npx -y goldie@0 preview && GOLDIE_CONFIG=... npx -y goldie@0 manifest
+GOLDIE_CONFIG=... node <frostie-root>/scripts/frostie.mjs preview \
+  && GOLDIE_CONFIG=... node <frostie-root>/scripts/frostie.mjs manifest
 ```
 
 If `preview` refuses (outside 15–30 s), adjust segment pacing (`wait:`
 steps, `holdSeconds`) and re-capture only what changed. Finish with
-`GOLDIE_CONFIG=... npx -y goldie@0 verify` and report which assets exist,
+`GOLDIE_CONFIG=... node <frostie-root>/scripts/frostie.mjs verify` and report which assets exist,
 where, and whether they pass the rules.
 
 ## Iterating on an existing setup
@@ -214,7 +215,7 @@ as the new baseline.
 ## Notes
 
 - The Play render and the studio need `out/raw/<device>/` from `capture`.
-- frostie self-installs its engine copy into `~/.cache/frostie/` on first
-  run (npm), so the first invocation takes a minute.
-- Config format is `goldie.config.ts` + `goldie.design.json` — any existing
-  goldie project works with frostie unchanged.
+- The vendored engine syncs itself into `~/.cache/frostie/engine` and
+  installs its runtime deps on first use — the first invocation takes a minute.
+- Config format is `goldie.config.ts` + `goldie.design.json` (legacy names
+  kept for compatibility — any existing goldie project works unchanged).
