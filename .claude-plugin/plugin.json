@@ -1,6 +1,6 @@
 {
   "name": "frostie",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "App Store AND Google Play store assets in one pass: argent flows on a simulator, framed screenshots, preview video, feature graphic, and a dual-store live studio.",
   "author": {
     "name": "Tomek Wojciechowski"

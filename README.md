@@ -16,8 +16,9 @@ pass**. Fully self-contained: the rendering/capture engine is vendored in `engin
   **1080×1920** phone screenshots (≥4 qualify for large recommendation formats) and the
   mandatory **1024×500 feature graphic** (JPEG; Play rejects alpha PNGs). Screen-only by
   default — no Apple hardware on a Play listing.
-- **Dual-store live studio** (`http://localhost:4322`): the App Store product page and
-  the Play listing side by side, edited together. Background, font, template, global and
+- **Dual-store live studio** (`http://localhost:4322`): an editor-style workspace — the App
+  Store product page or the Play listing on the canvas, a Design / Copy / Checks inspector on
+  the right; click a screenshot to jump to its headline. Background, font, template, global and
   per-tile layout, tile order (↑/↓), bezel variant, screen-only / Play-bezel toggles and
   per-tile headlines — every change auto-saves the shared `goldie.design.json` and
   re-renders **both** stores server-side in about a second. Plus an Apple + Play rules

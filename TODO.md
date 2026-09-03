@@ -35,3 +35,7 @@ Rule: a box gets checked only after the item has been TESTED.
 ## 0.4.1 — i18n
 - [x] 22. English as the default language of the CLI, studio UI and docs
 - [x] 23. Polish README (README.pl.md)
+
+## 0.5.0 — studio redesign
+- [x] 24. Editor-style studio UI: top bar with store switch + live status, canvas with real store mockups,
+       3-tab inspector (Design / Copy / Checks), tile ⇄ headline selection, deep links (?store, ?pane, ?sel)

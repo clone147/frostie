@@ -16,8 +16,9 @@ przebiegu**. W pełni samodzielny: silnik renderowania/przechwytywania jest zven
   screenshoty telefonu **1080×1920** (≥4 kwalifikują się do dużych formatów polecania) oraz
   obowiązkowy **feature graphic 1024×500** (JPEG; Play odrzuca PNG z alfą). Domyślnie
   screen-only — bez sprzętu Apple na liście Play.
-- **Dwusklepowe studio na żywo** (`http://localhost:4322`): strona produktu App Store i
-  lista Play obok siebie, edytowane razem. Tło, font, template, layout globalny i per kafel,
+- **Dwusklepowe studio na żywo** (`http://localhost:4322`): przestrzeń robocza jak w edytorze —
+  strona produktu App Store albo listing Play na kanwie, po prawej inspektor Design / Copy /
+  Checks; klik w screenshot przenosi do jego nagłówka. Tło, font, template, layout globalny i per kafel,
   kolejność kafli (↑/↓), wariant ramki, przełączniki screen-only / ramki Play i nagłówki per
   kafel — każda zmiana auto-zapisuje wspólny `goldie.design.json` i re-renderuje **oba**
   sklepy server-side w około sekundę. Do tego panel weryfikacji reguł Apple + Play i
