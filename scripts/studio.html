@@ -39,8 +39,12 @@
        border-bottom:1px solid var(--line);background:var(--surface);position:relative;z-index:5}
   .top-l,.top-r{display:flex;align-items:center;gap:12px}
   .top-r{justify-content:flex-end}
-  .mark{font-family:var(--mark);font-weight:600;font-size:15px;letter-spacing:.03em;color:var(--tx)}
-  .mark b{color:var(--brand);font-weight:600}
+  /* wordmark: brackets drawn to cap height (typed [ ] in Space Grotesk overshoot the caps) */
+  .mark{font-family:var(--mark);font-weight:600;font-size:15px;line-height:1;letter-spacing:.03em;color:var(--tx);white-space:nowrap}
+  .mark::before,.mark::after{content:"";display:inline-block;vertical-align:baseline;box-sizing:border-box;
+       width:.36em;height:.72em;border:.13em solid var(--brand)}
+  .mark::before{border-right:0;margin-right:.2em}
+  .mark::after{border-left:0;margin-left:.2em}
   .crumb{display:flex;align-items:center;gap:8px;color:var(--tx-3);font-size:13px}
   .crumb .sep{width:1px;height:18px;background:var(--line-2)}
   .crumb .name{color:var(--tx);font-weight:600}
@@ -280,7 +284,7 @@
   <!-- ─── top bar ─── -->
   <header class="top">
     <div class="top-l">
-      <div class="mark"><b>[</b>FROSTIE<b>]</b></div>
+      <div class="mark" aria-label="[FROSTIE]">FROSTIE</div>
       <div class="crumb"><span class="sep"></span><span class="name" id="projName">…</span><span class="tag">Studio</span></div>
     </div>
     <div class="seg" id="storeSeg">
