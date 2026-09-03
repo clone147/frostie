@@ -132,15 +132,16 @@
   .tile video{object-fit:contain;background:#000}
   #plStrip{--ratio:.5625}
   .tile:hover{transform:translateY(-2px)}
-  .tile.sel{outline-color:var(--accent)}
+  .tile.is-sel{outline-color:var(--accent)}
   .tile .n{position:absolute;top:10px;left:10px;height:22px;min-width:22px;padding:0 7px;border-radius:100px;display:flex;align-items:center;justify-content:center;
            font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);opacity:0;transition:opacity .15s;
            border:1px solid rgba(255,255,255,.18)}
-  .tile:hover .n,.tile.sel .n{opacity:1}
-  .tile.sel .n{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+  .tile:hover .n,.tile.is-sel .n{opacity:1}
+  .tile.is-sel .n{background:var(--accent);color:var(--accent-ink);border-color:transparent}
   .tile.video{cursor:default}
   .tile.video:hover{transform:none}
   .tile.video .n{opacity:1;background:rgba(0,0,0,.55);color:#fff}
+  .tile[hidden]{display:none}
   .empty{padding:60px 20px;text-align:center;color:var(--tx-3);border:1px dashed var(--line-2);border-radius:16px;margin-top:16px}
   .empty b{display:block;color:var(--tx-2);margin-bottom:4px}
 
@@ -230,14 +231,14 @@
          position:relative;transition:border-color .15s,background .15s;cursor:pointer}
   .tcard::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;background:transparent;transition:background .15s}
   .tcard:hover{background:#1E1E24}
-  .tcard.sel{border-color:var(--line-2);background:#1E1E24}
-  .tcard.sel::before{background:var(--accent)}
+  .tcard.is-sel{border-color:var(--line-2);background:#1E1E24}
+  .tcard.is-sel::before{background:var(--accent)}
   .tcard .hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .tcard .num{width:20px;height:20px;border-radius:6px;background:var(--surface-3);color:var(--tx-2);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
-  .tcard.sel .num{background:var(--accent);color:var(--accent-ink)}
+  .tcard.is-sel .num{background:var(--accent);color:var(--accent-ink)}
   .tcard .id{font-size:12px;color:var(--tx-3);font-weight:500;flex:1;font-family:ui-monospace,"SF Mono",Menlo,monospace}
   .tcard .mv{display:flex;gap:2px;opacity:.55;transition:opacity .15s}
-  .tcard:hover .mv,.tcard.sel .mv{opacity:1}
+  .tcard:hover .mv,.tcard.is-sel .mv{opacity:1}
   .tcard textarea.ta{background:var(--surface);}
   .tcard .hl{font-weight:600;font-size:13.5px}
   .tcard .sh{color:var(--tx-2);font-size:12.5px;margin-top:6px}
@@ -328,7 +329,10 @@
             <div><div class="k">Developer</div><div class="v" id="asDev2" style="font-size:15px;margin-top:6px">–</div></div>
           </div>
           <div class="sec"><h3>Preview</h3><span class="hint">Click a screenshot to edit its headline</span></div>
-          <div class="strip" id="asStrip"></div>
+          <div class="strip" id="asStrip">
+            <figure class="tile video" id="asVideoTile" hidden><span class="n">▶ Preview</span><video id="asVideo" controls muted playsinline preload="auto"></video></figure>
+            <div id="asTiles" style="display:contents"></div>
+          </div>
           <div class="sec"><h3>Description</h3></div>
           <div class="desc clamp" id="asDesc"></div>
           <span class="more">more</span>
@@ -356,6 +360,7 @@
           <div class="strip" id="plStrip"></div>
           <div class="sec"><h3>About this app</h3></div>
           <div class="desc clamp" id="plDesc"></div>
+          <span class="more" style="color:#5DD39E">more</span>
         </div>
         <div class="fg-card" id="fgCard">
           <div class="sec" style="margin-top:0"><h3>Feature graphic</h3><span class="hint">1024×500 JPEG · shown in Play promo placements</span></div>
@@ -499,16 +504,15 @@ function buildModel(s){
 /* ─── canvas ─── */
 function tileHTML(url, i, kind){
   const id = sceneIdOf(url);
-  return `<figure class="tile ${id===selected?"sel":""}" data-id="${esc(id)}" title="${esc(id)}">
+  return `<figure class="tile ${id===selected?"is-sel":""}" data-id="${esc(id)}" title="${esc(id)}">
     <span class="n">${i}</span><img src="${url}?t=${Date.now()}" alt="${esc(id)}" draggable="false"></figure>`;
 }
 function renderStrips(){
   const s = S, t = Date.now();
-  const vid = s.preview
-    ? `<figure class="tile video"><span class="n">▶ Preview</span><video src="${s.preview}?t=${t}" controls muted playsinline preload="auto"></video></figure>`
-    : "";
-  $("asStrip").innerHTML = s.ios.length
-    ? vid + s.ios.map((u,i)=>tileHTML(u, i+1, "ios")).join("")
+  const v = $("asVideo"), vt = $("asVideoTile");
+  if (s.preview) { if (!v.dataset.src) { v.src = v.dataset.src = s.preview + "?t=" + t; } vt.hidden = false; } else vt.hidden = true;
+  $("asTiles").innerHTML = s.ios.length
+    ? s.ios.map((u,i)=>tileHTML(u, i+1, "ios")).join("")
     : `<div class="empty" style="width:100%"><b>No App Store screenshots yet</b>Run <code>frostie capture</code> and <code>frostie frame</code>.</div>`;
   $("plStrip").innerHTML = s.play.length
     ? s.play.map((u,i)=>tileHTML(u, i+1, "play")).join("")
@@ -538,7 +542,8 @@ function renderHeader(){
 function renderChecks(){
   const s = S, v = s.verify || [];
   const item = (x) => `<div class="chk ${x.ok?"ok":"warn"}"><span class="ic">${x.ok?ICONS.ok:ICONS.warn}</span><div><div class="t">${esc(x.item)}</div><div class="d">${esc(x.detail)}</div></div></div>`;
-  const as = v.filter(x=>/app\s*store|ios|apple/i.test(x.store)), pl = v.filter(x=>!as.includes(x));
+  const byIssue = (a,b) => Number(a.ok) - Number(b.ok);
+  const as = v.filter(x=>/app\s*store|ios|apple/i.test(x.store)).sort(byIssue), pl = v.filter(x=>!as.includes(x)).sort(byIssue);
   $("verify-as").innerHTML = as.map(item).join("") || `<div class="chk ok"><span class="ic">${ICONS.ok}</span><div class="d">Nothing to verify yet.</div></div>`;
   $("verify-pl").innerHTML = pl.map(item).join("") || `<div class="chk ok"><span class="ic">${ICONS.ok}</span><div class="d">Nothing to verify yet.</div></div>`;
   const sub = (arr) => { const bad = arr.filter(x=>!x.ok).length; return bad ? `${bad} issue${bad>1?"s":""}` : arr.length ? "all passed" : ""; };
@@ -574,7 +579,7 @@ function renderScenes(){
   const n = M.scenes.length;
   $("copyCount").textContent = n;
   $("scenes").innerHTML = M.scenes.map((sc,i)=>`
-    <div class="tcard ${sc.id===selected?"sel":""}" data-id="${esc(sc.id)}">
+    <div class="tcard ${sc.id===selected?"is-sel":""}" data-id="${esc(sc.id)}">
       <div class="hd"><span class="num">${i+1}</span><span class="id">${esc(sc.id)}</span>
         <span class="mv"><button class="icon-btn" data-dir="-1" title="Move up" ${i===0?"disabled":""}>${ICONS.up}</button>
         <button class="icon-btn" data-dir="1" title="Move down" ${i===n-1?"disabled":""}>${ICONS.down}</button></span></div>
@@ -601,8 +606,8 @@ function renderScenes(){
 /* ─── selection: canvas tile ⇄ copy card ─── */
 function select(id, { fromCanvas, fromPanel, quiet } = {}){
   selected = id;
-  document.querySelectorAll(".tile").forEach(t=>t.classList.toggle("sel", t.dataset.id===id));
-  document.querySelectorAll(".tcard").forEach(c=>c.classList.toggle("sel", c.dataset.id===id));
+  document.querySelectorAll(".tile").forEach(t=>t.classList.toggle("is-sel", t.dataset.id===id));
+  document.querySelectorAll(".tcard").forEach(c=>c.classList.toggle("is-sel", c.dataset.id===id));
   $("deselect").disabled = !id;
   if (!id) return;
   if (fromCanvas) {
@@ -642,7 +647,7 @@ document.querySelectorAll(".tools [data-size]").forEach(b=>b.onclick=()=>{
   try { localStorage.setItem("frostie.tile", b.dataset.size); } catch {}
 });
 document.querySelectorAll(".desc").forEach(d=>d.onclick=()=>d.classList.toggle("clamp"));
-document.querySelector(".more").onclick = ()=>$("asDesc").classList.toggle("clamp");
+document.querySelectorAll(".more").forEach(m=>m.onclick=()=>m.previousElementSibling.classList.toggle("clamp"));
 
 /* ─── live apply: every change saves + re-renders both stores (debounced, queued) ─── */
 let timer = null, applying = false, dirty = false;
@@ -692,6 +697,7 @@ fetch("/api/state").then(r=>r.json()).then(s=>{
   renderHeader(); renderStrips(); renderChecks(); renderDesign(); renderScenes(); wire();
   const q = new URLSearchParams(location.search);
   if (q.get("pane")) showPane(q.get("pane"));
+  if (q.get("sel")) select(q.get("sel"), { fromCanvas:true });
   requestAnimationFrame(()=>setStore(q.get("store")==="pl" ? "pl" : "as"));
 }).catch(e=>setStatus("err", "Cannot load state: " + e.message));
 </script>
